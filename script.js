@@ -144,6 +144,9 @@ function initPage() {
     // 添加长按事件（用于移动设备）
     setupLongPressEvents();
     
+    // 初始化拖拽排序功能
+    initDragSortTouch();
+    
     // 设置页面标题
     document.title = getText('appTitle');
 }
@@ -275,6 +278,13 @@ function renderApplications() {
         appItem.dataset.index = index;
         appItem.dataset.category = 'applications';
         
+        // 添加拖拽属性
+        appItem.draggable = true;
+        appItem.addEventListener('dragstart', handleDragStart);
+        appItem.addEventListener('dragover', handleDragOver);
+        appItem.addEventListener('drop', handleDrop);
+        appItem.addEventListener('dragend', handleDragEnd);
+        
         // 检查是否有favicon URL
         let iconHtml = '';
         if (app.faviconUrl) {
@@ -322,9 +332,21 @@ function renderBookmarks() {
                 li.dataset.index = index;
                 li.dataset.category = category;
                 
+                // 添加拖拽属性
+                li.draggable = true;
+                li.addEventListener('dragstart', handleDragStart);
+                li.addEventListener('dragover', handleDragOver);
+                li.addEventListener('drop', handleDrop);
+                li.addEventListener('dragend', handleDragEnd);
+                
                 const a = document.createElement('a');
                 a.href = link.url;
                 a.target = '_blank';
+                
+                // 阻止链接点击事件冒泡，避免与拖拽冲突
+                a.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
                 
                 // 检查是否有favicon URL
                 let iconHtml = '';
@@ -902,6 +924,259 @@ async function fetchSiteNameAndTitle(url) {
         console.error('获取网站标题失败:', error);
         throw new Error('无法获取网站标题');
     }
+}
+
+// 处理拖拽开始事件
+let draggedItem = null;
+let sourceCategoryName = '';
+let sourceIndex = 0;
+
+function handleDragStart(e) {
+    // 设置拖拽效果和数据
+    e.dataTransfer.effectAllowed = 'move';
+    
+    // 存储拖拽的项目信息
+    draggedItem = this;
+    sourceCategoryName = this.dataset.category;
+    sourceIndex = parseInt(this.dataset.index);
+    
+    // 添加一个类以改变拖拽元素的外观
+    setTimeout(() => {
+        this.classList.add('dragging');
+    }, 0);
+}
+
+// 处理拖拽经过事件
+function handleDragOver(e) {
+    // 阻止默认行为以允许放置
+    e.preventDefault();
+    
+    // 设置放置效果
+    e.dataTransfer.dropEffect = 'move';
+    
+    // 如果是不同的元素，添加拖拽经过的视觉效果
+    if (draggedItem !== this) {
+        this.classList.add('drag-over');
+    }
+    
+    return false;
+}
+
+// 处理放置事件
+function handleDrop(e) {
+    e.preventDefault();
+    
+    // 移除拖拽经过的视觉效果
+    this.classList.remove('drag-over');
+    
+    // 如果拖放在自己身上，不做任何操作
+    if (draggedItem === this) {
+        return false;
+    }
+    
+    // 获取目标元素的位置信息
+    const targetCategoryName = this.dataset.category;
+    const targetIndex = parseInt(this.dataset.index);
+    
+    // 在相同分类内重新排序
+    if (sourceCategoryName === targetCategoryName) {
+        // 获取拖拽的链接对象
+        const draggedLink = links[sourceCategoryName].splice(sourceIndex, 1)[0];
+        
+        // 在新位置插入
+        links[targetCategoryName].splice(targetIndex, 0, draggedLink);
+    } else {
+        // 跨分类移动（如果允许）
+        const draggedLink = links[sourceCategoryName].splice(sourceIndex, 1)[0];
+        
+        // 确保目标分类存在
+        if (!links[targetCategoryName]) {
+            links[targetCategoryName] = [];
+        }
+        
+        // 在新分类中插入
+        links[targetCategoryName].splice(targetIndex, 0, draggedLink);
+    }
+    
+    // 保存到本地存储
+    localStorage.setItem('navLinks', JSON.stringify(links));
+    
+    // 重新渲染
+    renderApplications();
+    renderBookmarks();
+    
+    return false;
+}
+
+// 处理拖拽结束事件
+function handleDragEnd() {
+    // 移除拖拽中的视觉效果
+    this.classList.remove('dragging');
+    
+    // 移除所有元素上的拖拽经过效果
+    document.querySelectorAll('.application-item, .category li').forEach(item => {
+        item.classList.remove('drag-over');
+    });
+    
+    // 重置拖拽状态
+    draggedItem = null;
+}
+
+// 为触摸设备初始化拖拽排序
+function initDragSortTouch() {
+    // 处理触摸设备上的拖拽
+    let touchTimeout;
+    let touchStartX, touchStartY;
+    let touchMoving = false;
+    let touchTarget = null;
+    let ghostElement = null;
+    
+    // 创建触摸拖拽的幽灵元素
+    function createGhostElement(element) {
+        const ghost = element.cloneNode(true);
+        ghost.style.position = 'absolute';
+        ghost.style.opacity = '0.7';
+        ghost.style.pointerEvents = 'none';
+        ghost.style.zIndex = '1000';
+        document.body.appendChild(ghost);
+        return ghost;
+    }
+    
+    // 监听触摸开始事件
+    document.addEventListener('touchstart', (e) => {
+        const target = e.target.closest('.application-item, .category li');
+        if (!target) return;
+        
+        touchTarget = target;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        
+        // 长按后才触发拖拽
+        touchTimeout = setTimeout(() => {
+            // 创建幽灵元素
+            ghostElement = createGhostElement(touchTarget);
+            updateGhostPosition(e.touches[0].clientX, e.touches[0].clientY);
+            
+            touchTarget.classList.add('dragging');
+            sourceCategoryName = touchTarget.dataset.category;
+            sourceIndex = parseInt(touchTarget.dataset.index);
+        }, 300);
+    });
+    
+    // 更新幽灵元素位置
+    function updateGhostPosition(x, y) {
+        if (!ghostElement) return;
+        ghostElement.style.left = `${x - ghostElement.offsetWidth / 2}px`;
+        ghostElement.style.top = `${y - ghostElement.offsetHeight / 2}px`;
+    }
+    
+    // 监听触摸移动事件
+    document.addEventListener('touchmove', (e) => {
+        if (!touchTarget) return;
+        
+        const touchX = e.touches[0].clientX;
+        const touchY = e.touches[0].clientY;
+        
+        // 判断是否是拖拽意图（移动距离超过10像素）
+        const moveX = Math.abs(touchX - touchStartX);
+        const moveY = Math.abs(touchY - touchStartY);
+        
+        if (moveX > 10 || moveY > 10) {
+            touchMoving = true;
+            clearTimeout(touchTimeout);
+            
+            // 更新幽灵元素位置
+            if (ghostElement) {
+                updateGhostPosition(touchX, touchY);
+                
+                // 寻找可放置的目标
+                const elementsAtPoint = document.elementsFromPoint(touchX, touchY);
+                const dropTarget = elementsAtPoint.find(el => 
+                    (el.classList.contains('application-item') || 
+                     el.closest('.category li')) && 
+                    el !== touchTarget
+                );
+                
+                // 移除所有drag-over效果
+                document.querySelectorAll('.drag-over').forEach(el => {
+                    el.classList.remove('drag-over');
+                });
+                
+                // 为当前悬停的元素添加效果
+                if (dropTarget) {
+                    dropTarget.classList.add('drag-over');
+                }
+            }
+        }
+    });
+    
+    // 监听触摸结束事件
+    document.addEventListener('touchend', (e) => {
+        clearTimeout(touchTimeout);
+        
+        // 如果存在幽灵元素，处理放置逻辑
+        if (ghostElement) {
+            const touchX = e.changedTouches[0].clientX;
+            const touchY = e.changedTouches[0].clientY;
+            
+            // 寻找放置目标
+            const elementsAtPoint = document.elementsFromPoint(touchX, touchY);
+            const dropTarget = elementsAtPoint.find(el => 
+                (el.classList.contains('application-item') || 
+                 el.closest('.category li')) && 
+                el !== touchTarget
+            );
+            
+            // 如果找到放置目标，处理数据移动
+            if (dropTarget) {
+                const targetCategoryName = dropTarget.dataset.category;
+                const targetIndex = parseInt(dropTarget.dataset.index);
+                
+                // 处理排序逻辑
+                if (sourceCategoryName === targetCategoryName) {
+                    // 获取拖拽的链接对象
+                    const draggedLink = links[sourceCategoryName].splice(sourceIndex, 1)[0];
+                    
+                    // 在新位置插入
+                    links[targetCategoryName].splice(targetIndex, 0, draggedLink);
+                } else {
+                    // 跨分类移动
+                    const draggedLink = links[sourceCategoryName].splice(sourceIndex, 1)[0];
+                    
+                    // 确保目标分类存在
+                    if (!links[targetCategoryName]) {
+                        links[targetCategoryName] = [];
+                    }
+                    
+                    // 在新分类中插入
+                    links[targetCategoryName].splice(targetIndex, 0, draggedLink);
+                }
+                
+                // 保存到本地存储
+                localStorage.setItem('navLinks', JSON.stringify(links));
+                
+                // 重新渲染
+                renderApplications();
+                renderBookmarks();
+            }
+            
+            // 移除幽灵元素
+            document.body.removeChild(ghostElement);
+            ghostElement = null;
+        }
+        
+        // 清理状态
+        if (touchTarget) {
+            touchTarget.classList.remove('dragging');
+        }
+        
+        document.querySelectorAll('.drag-over').forEach(el => {
+            el.classList.remove('drag-over');
+        });
+        
+        touchTarget = null;
+        touchMoving = false;
+    });
 }
 
 // 初始化页面

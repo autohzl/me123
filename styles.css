@@ -454,6 +454,32 @@ button[type="submit"]:hover {
     flex: 1;
 }
 
+/* 拖拽相关样式 */
+.application-item.dragging,
+.category li.dragging {
+    opacity: 0.5;
+    border: 2px dashed #8bc34a;
+    background-color: rgba(139, 195, 74, 0.1);
+}
+
+.application-item.drag-over,
+.category li.drag-over {
+    border: 2px dashed #8bc34a;
+    background-color: rgba(139, 195, 74, 0.2);
+}
+
+/* 确保应用程序和书签项光标显示为可移动 */
+.application-item,
+.category li {
+    cursor: grab;
+    transition: all 0.2s ease;
+}
+
+.application-item:active,
+.category li:active {
+    cursor: grabbing;
+}
+
 .dropdown-list {
     display: none;
     position: absolute;
