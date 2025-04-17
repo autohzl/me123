@@ -12,15 +12,6 @@
         <header>
             <div class="date-info" id="date-display"></div>
             <div class="greeting" id="greeting">Good afternoon!</div>
-            <div class="weather">
-                <div class="weather-icon">
-                    <i class="fas fa-cloud-sun"></i>
-                </div>
-                <div class="weather-info">
-                    <span id="temperature">8°C</span>
-                    <span id="humidity">75%</span>
-                </div>
-            </div>
         </header>
 
         <section class="section-title">
@@ -212,10 +203,30 @@
         </div>
     </div>
     
+    <!-- 用户名设置模态窗口 -->
+    <div id="username-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="username-close">&times;</span>
+            <h2 id="username-title">设置用户名</h2>
+            <form id="username-form">
+                <div class="form-group">
+                    <label for="username-input">您的名字:</label>
+                    <input type="text" id="username-input" placeholder="请输入您的名字" required>
+                </div>
+                <div class="form-group">
+                    <label for="page-title-input">导航页面标题:</label>
+                    <input type="text" id="page-title-input" placeholder="例如：个人导航页面">
+                </div>
+                <button type="submit" class="edit-btn">保存</button>
+            </form>
+        </div>
+    </div>
+    
     <!-- 导入/导出操作的菜单 -->
     <div class="menu-container">
         <button id="menu-btn" class="menu-btn"><i class="fas fa-ellipsis-v"></i></button>
         <div class="dropdown-menu">
+            <button id="set-username-btn">设置用户名</button>
             <button id="manage-categories-btn">管理分类</button>
             <button id="toggle-language-btn">切换语言 / Language</button>
             <button id="refresh-icons-btn">刷新所有图标</button>

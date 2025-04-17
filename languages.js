@@ -12,7 +12,16 @@ const languages = {
         morning: "早上好！",
         afternoon: "下午好！",
         evening: "晚上好！",
+        morningWithName: "{name}，早上好！",
+        afternoonWithName: "{name}，下午好！",
+        eveningWithName: "{name}，晚上好！",
         
+        // 用户名设置
+        setUsername: "设置用户名",
+        yourName: "您的名字:",
+        pageTitle: "导航页面标题:",
+        pageTitlePlaceholder: "例如：个人导航页面",
+        saveSettings: "保存",
         // 日期格式化选项
         dateFormatOptions: { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' },
         
@@ -90,6 +99,16 @@ const languages = {
         morning: "Good morning!",
         afternoon: "Good afternoon!",
         evening: "Good evening!",
+        morningWithName: "Good morning, {name}!",
+        afternoonWithName: "Good afternoon, {name}!",
+        eveningWithName: "Good evening, {name}!",
+        
+        // Username settings
+        setUsername: "Set Username",
+        yourName: "Your Name:",
+        pageTitle: "Navigation Page Title:",
+        pageTitlePlaceholder: "e.g.: Personal Navigation Page",
+        saveSettings: "Save",
         
         // Date format options
         dateFormatOptions: { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' },

@@ -79,6 +79,10 @@ const editFetchNameBtn = document.getElementById('edit-fetch-name-btn');
 const toggleLanguageBtn = document.getElementById('toggle-language-btn');
 const recentUrlsBtn = document.getElementById('recent-urls-btn');
 const recentUrlsDropdown = document.getElementById('recent-urls-dropdown');
+const setUsernameBtn = document.getElementById('set-username-btn');
+const usernameModal = document.getElementById('username-modal');
+const usernameCloseBtn = document.getElementById('username-close');
+const usernameForm = document.getElementById('username-form');
 
 // 获取本地存储的链接或使用初始数据
 let links = JSON.parse(localStorage.getItem('navLinks')) || initialLinks;
@@ -95,6 +99,10 @@ let recentUrls = JSON.parse(localStorage.getItem('recentUrls')) || [];
 
 // 当前语言设置
 let currentLang = localStorage.getItem('language') || 'zh';
+
+// 用户信息
+let userName = localStorage.getItem('userName') || '';
+let pageTitle = localStorage.getItem('pageTitle') || '';
 
 // 获取当前语言的文本
 function getText(key) {
@@ -120,6 +128,7 @@ function initPage() {
         if (e.target === modal) closeModal();
         if (e.target === editModal) closeEditModal();
         if (e.target === categoryModal) closeCategoryModal();
+        if (e.target === usernameModal) closeUsernameModal();
         
         // 点击其他区域关闭历史记录下拉菜单
         if (!e.target.closest('#recent-urls-btn') && !e.target.closest('#recent-urls-dropdown')) {
@@ -137,6 +146,11 @@ function initPage() {
     refreshIconsBtn.addEventListener('click', refreshAllIcons);
     toggleLanguageBtn.addEventListener('click', toggleLanguage);
     manageCategoriesBtn.addEventListener('click', openCategoryModal);
+    setUsernameBtn.addEventListener('click', openUsernameModal);
+    
+    // 用户名设置事件
+    usernameCloseBtn.addEventListener('click', closeUsernameModal);
+    usernameForm.addEventListener('submit', handleUsernameSubmit);
     
     // 自动获取名称按钮事件
     fetchNameBtn.addEventListener('click', handleFetchName);
@@ -171,7 +185,7 @@ function applyLanguage() {
     document.documentElement.lang = currentLang === 'zh' ? 'zh-CN' : 'en';
     
     // 设置页面标题
-    document.title = getText('appTitle');
+    document.title = pageTitle || getText('appTitle');
     
     // 更新分类标题
     document.getElementById('applications-title').textContent = getText('applications');
@@ -283,11 +297,11 @@ function updateGreeting() {
     let greetingText = '';
     
     if (hour < 12) {
-        greetingText = getText('morning');
+        greetingText = userName ? getText('morningWithName').replace('{name}', userName) : getText('morning');
     } else if (hour < 18) {
-        greetingText = getText('afternoon');
+        greetingText = userName ? getText('afternoonWithName').replace('{name}', userName) : getText('afternoon');
     } else {
-        greetingText = getText('evening');
+        greetingText = userName ? getText('eveningWithName').replace('{name}', userName) : getText('evening');
     }
     
     greeting.textContent = greetingText;
@@ -1905,6 +1919,51 @@ function handleDeleteCategory() {
             closeCategoryEditModal();
         }
     }
+}
+
+// 打开用户名设置模态窗口
+function openUsernameModal() {
+    // 填充现有值
+    document.getElementById('username-input').value = userName;
+    document.getElementById('page-title-input').value = pageTitle || getText('appTitle');
+    
+    // 更新模态窗口文本
+    document.getElementById('username-title').textContent = getText('setUsername');
+    document.querySelector('#username-form label[for="username-input"]').textContent = getText('yourName');
+    document.querySelector('#username-form label[for="page-title-input"]').textContent = getText('pageTitle');
+    document.querySelector('#username-form button[type="submit"]').textContent = getText('saveSettings');
+    document.getElementById('page-title-input').placeholder = getText('pageTitlePlaceholder');
+    
+    // 显示模态窗口
+    usernameModal.style.display = 'block';
+    
+    // 关闭菜单
+    dropdownMenu.classList.remove('active');
+}
+
+// 关闭用户名设置模态窗口
+function closeUsernameModal() {
+    usernameModal.style.display = 'none';
+}
+
+// 处理用户名表单提交
+function handleUsernameSubmit(e) {
+    e.preventDefault();
+    
+    // 获取表单值
+    userName = document.getElementById('username-input').value.trim();
+    pageTitle = document.getElementById('page-title-input').value.trim();
+    
+    // 保存到本地存储
+    localStorage.setItem('userName', userName);
+    localStorage.setItem('pageTitle', pageTitle);
+    
+    // 更新页面标题和问候语
+    document.title = pageTitle || getText('appTitle');
+    updateGreeting();
+    
+    // 关闭模态窗口
+    closeUsernameModal();
 }
 
 // 初始化页面
