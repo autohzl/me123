@@ -1,7 +1,7 @@
 {
   "name": "导航页标签选择器",
   "description": "在导航页中一键添加已打开标签页，自动获取网址、标题和图标",
-  "version": "1.1",
+  "version": "1.2",
   "manifest_version": 3,
   "action": {
     "default_popup": "popup.html",
@@ -15,10 +15,17 @@
   "permissions": [
     "tabs",
     "activeTab",
-    "storage"
+    "storage",
+    "scripting"
   ],
   "host_permissions": [
     "*://*/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["images/*"],
+      "matches": ["<all_urls>"]
+    }
   ],
   "background": {
     "service_worker": "background.js"
@@ -26,7 +33,11 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"]
+      "js": ["content.js"],
+      "run_at": "document_end"
     }
-  ]
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
 } 
