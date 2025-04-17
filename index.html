@@ -99,7 +99,13 @@
             <form id="add-link-form">
                 <div class="form-group">
                     <label for="link-url" id="url-label">网址:</label>
-                    <input type="url" id="link-url" required placeholder="https://example.com">
+                    <div class="input-with-dropdown">
+                        <input type="url" id="link-url" required placeholder="https://example.com">
+                        <button type="button" id="recent-urls-btn" class="small-btn"><i class="fas fa-history"></i></button>
+                        <div id="recent-urls-dropdown" class="dropdown-list">
+                            <!-- 最近添加的网址列表将在这里动态生成 -->
+                        </div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="link-name" id="name-label">名称:</label>

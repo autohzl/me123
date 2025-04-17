@@ -443,6 +443,59 @@ button[type="submit"]:hover {
     flex: 1;
 }
 
+/* 带下拉列表的输入框样式 */
+.input-with-dropdown {
+    position: relative;
+    display: flex;
+    gap: 8px;
+}
+
+.input-with-dropdown input {
+    flex: 1;
+}
+
+.dropdown-list {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: #2e3138;
+    border: 1px solid #35383f;
+    border-radius: 4px;
+    z-index: 10;
+    margin-top: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dropdown-list.active {
+    display: block;
+}
+
+.dropdown-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    border-bottom: 1px solid #35383f;
+}
+
+.dropdown-item:hover {
+    background-color: #35383f;
+}
+
+.dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item .url {
+    font-size: 0.8rem;
+    color: #8bc34a;
+    margin-top: 4px;
+    word-break: break-all;
+}
+
 .small-btn {
     background-color: #2e3138;
     border: 1px solid #35383f;
@@ -458,4 +511,11 @@ button[type="submit"]:hover {
 .small-btn:hover {
     background-color: #35383f;
     color: #a0d468;
+}
+
+/* 下拉项分隔线 */
+.dropdown-item-divider {
+    height: 1px;
+    background-color: #35383f;
+    margin: 4px 0;
 } 

@@ -62,7 +62,12 @@ const languages = {
         fetchNameFailed: "获取网站名称失败: ",
         importSuccess: "导入成功",
         importFailed: "导入失败：无效的JSON数据",
-        iconsRefreshed: "成功刷新了 {count} 个图标"
+        iconsRefreshed: "成功刷新了 {count} 个图标",
+        
+        // 历史记录
+        recentUrls: "最近添加",
+        noRecentUrls: "暂无最近添加的网址",
+        clearHistory: "清除历史记录"
     },
     
     en: {
@@ -123,6 +128,11 @@ const languages = {
         fetchNameFailed: "Failed to fetch website name: ",
         importSuccess: "Import successful",
         importFailed: "Import failed: Invalid JSON data",
-        iconsRefreshed: "Successfully refreshed {count} icons"
+        iconsRefreshed: "Successfully refreshed {count} icons",
+        
+        // History
+        recentUrls: "Recently Added",
+        noRecentUrls: "No recent URLs",
+        clearHistory: "Clear History"
     }
 }; 

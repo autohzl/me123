@@ -75,9 +75,14 @@ const refreshIconsBtn = document.getElementById('refresh-icons-btn');
 const fetchNameBtn = document.getElementById('fetch-name-btn');
 const editFetchNameBtn = document.getElementById('edit-fetch-name-btn');
 const toggleLanguageBtn = document.getElementById('toggle-language-btn');
+const recentUrlsBtn = document.getElementById('recent-urls-btn');
+const recentUrlsDropdown = document.getElementById('recent-urls-dropdown');
 
 // 获取本地存储的链接或使用初始数据
 let links = JSON.parse(localStorage.getItem('navLinks')) || initialLinks;
+
+// 获取最近添加的URL历史记录
+let recentUrls = JSON.parse(localStorage.getItem('recentUrls')) || [];
 
 // 当前语言设置
 let currentLang = localStorage.getItem('language') || 'zh';
@@ -105,6 +110,11 @@ function initPage() {
     window.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
         if (e.target === editModal) closeEditModal();
+        
+        // 点击其他区域关闭历史记录下拉菜单
+        if (!e.target.closest('#recent-urls-btn') && !e.target.closest('#recent-urls-dropdown')) {
+            recentUrlsDropdown.classList.remove('active');
+        }
     });
     addLinkForm.addEventListener('submit', handleAddLink);
     editLinkForm.addEventListener('submit', handleEditLink);
@@ -120,6 +130,9 @@ function initPage() {
     // 自动获取名称按钮事件
     fetchNameBtn.addEventListener('click', handleFetchName);
     editFetchNameBtn.addEventListener('click', handleEditFetchName);
+    
+    // 历史记录下拉菜单事件
+    recentUrlsBtn.addEventListener('click', toggleRecentUrlsDropdown);
     
     // 点击其他地方关闭菜单
     document.addEventListener('click', (e) => {
@@ -186,6 +199,11 @@ function applyLanguage() {
     
     // 更新问候语
     updateGreeting();
+    
+    // 如果历史记录下拉菜单正在显示，则重新渲染
+    if (recentUrlsDropdown.classList.contains('active')) {
+        renderRecentUrls();
+    }
 }
 
 // 更新分类下拉菜单选项的文本
@@ -402,6 +420,9 @@ async function handleAddLink(e) {
     // 保存到本地存储
     localStorage.setItem('navLinks', JSON.stringify(links));
     
+    // 添加到最近URL历史记录
+    addToRecentUrls(url, name);
+    
     // 重新渲染
     if (category === 'applications') {
         renderApplications();
@@ -410,6 +431,113 @@ async function handleAddLink(e) {
     }
     
     closeModal();
+}
+
+// 添加URL到最近历史记录
+function addToRecentUrls(url, name) {
+    // 检查是否已存在相同URL
+    const existingIndex = recentUrls.findIndex(item => item.url === url);
+    
+    // 如果存在，从数组中移除
+    if (existingIndex !== -1) {
+        recentUrls.splice(existingIndex, 1);
+    }
+    
+    // 添加到数组开头
+    recentUrls.unshift({
+        url,
+        name,
+        timestamp: new Date().getTime()
+    });
+    
+    // 限制历史记录数量为10
+    if (recentUrls.length > 10) {
+        recentUrls = recentUrls.slice(0, 10);
+    }
+    
+    // 保存到本地存储
+    localStorage.setItem('recentUrls', JSON.stringify(recentUrls));
+}
+
+// 切换最近URL下拉菜单显示状态
+function toggleRecentUrlsDropdown() {
+    // 切换显示状态
+    recentUrlsDropdown.classList.toggle('active');
+    
+    // 如果显示，则渲染列表
+    if (recentUrlsDropdown.classList.contains('active')) {
+        renderRecentUrls();
+    }
+}
+
+// 渲染最近添加的URL列表
+function renderRecentUrls() {
+    // 清空列表
+    recentUrlsDropdown.innerHTML = '';
+    
+    // 如果没有历史记录
+    if (recentUrls.length === 0) {
+        const emptyItem = document.createElement('div');
+        emptyItem.className = 'dropdown-item';
+        emptyItem.textContent = getText('noRecentUrls');
+        recentUrlsDropdown.appendChild(emptyItem);
+        return;
+    }
+    
+    // 添加清除历史记录选项
+    const clearItem = document.createElement('div');
+    clearItem.className = 'dropdown-item';
+    clearItem.textContent = getText('clearHistory');
+    clearItem.style.color = '#f44336';
+    clearItem.addEventListener('click', clearRecentUrls);
+    recentUrlsDropdown.appendChild(clearItem);
+    
+    // 添加分隔线
+    const divider = document.createElement('div');
+    divider.className = 'dropdown-item-divider';
+    recentUrlsDropdown.appendChild(divider);
+    
+    // 遍历并添加历史记录
+    recentUrls.forEach(item => {
+        const dropdownItem = document.createElement('div');
+        dropdownItem.className = 'dropdown-item';
+        
+        const nameElement = document.createElement('div');
+        nameElement.className = 'name';
+        nameElement.textContent = item.name;
+        
+        const urlElement = document.createElement('div');
+        urlElement.className = 'url';
+        urlElement.textContent = item.url;
+        
+        dropdownItem.appendChild(nameElement);
+        dropdownItem.appendChild(urlElement);
+        
+        // 点击事件
+        dropdownItem.addEventListener('click', () => {
+            document.getElementById('link-url').value = item.url;
+            document.getElementById('link-name').value = item.name;
+            recentUrlsDropdown.classList.remove('active');
+        });
+        
+        recentUrlsDropdown.appendChild(dropdownItem);
+    });
+}
+
+// 清除最近URL历史记录
+function clearRecentUrls() {
+    // 确认是否清除
+    if (confirm(getText('clearHistory') + '?')) {
+        // 清空数组
+        recentUrls = [];
+        
+        // 更新本地存储
+        localStorage.removeItem('recentUrls');
+        
+        // 重新渲染并关闭下拉菜单
+        renderRecentUrls();
+        recentUrlsDropdown.classList.remove('active');
+    }
 }
 
 // 处理编辑链接表单提交
