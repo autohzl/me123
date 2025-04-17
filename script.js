@@ -384,17 +384,18 @@ function renderBookmarks() {
         const categoryDiv = document.createElement('div');
         categoryDiv.className = 'category';
         categoryDiv.dataset.category = category;
-        categoryDiv.draggable = true;
-        
-        // 添加拖拽事件监听器
-        categoryDiv.addEventListener('dragstart', handleCategoryDragStart);
-        categoryDiv.addEventListener('dragover', handleCategoryDragOver);
-        categoryDiv.addEventListener('drop', handleCategoryDrop);
-        categoryDiv.addEventListener('dragend', handleCategoryDragEnd);
         
         // 创建标题和操作按钮
         const titleContainer = document.createElement('div');
         titleContainer.className = 'category-title-container';
+        
+        // 为标题容器添加拖拽属性和事件
+        titleContainer.draggable = true;
+        titleContainer.dataset.category = category;
+        titleContainer.addEventListener('dragstart', handleCategoryDragStart);
+        titleContainer.addEventListener('dragover', handleCategoryDragOver);
+        titleContainer.addEventListener('drop', handleCategoryDrop);
+        titleContainer.addEventListener('dragend', handleCategoryDragEnd);
         
         const title = document.createElement('h3');
         title.id = `${category}-title`;
@@ -415,6 +416,33 @@ function renderBookmarks() {
         // 创建书签列表
         const ul = document.createElement('ul');
         ul.id = `${category}-links`;
+        
+        // 为列表添加拖拽事件监听器，以便可以将链接直接拖到空列表
+        ul.addEventListener('dragover', handleDragOver);
+        ul.addEventListener('drop', function(e) {
+            // 如果列表为空且正在拖拽链接，则处理放置事件
+            if (isDraggingLink && (!links[category] || links[category].length === 0)) {
+                e.preventDefault();
+                
+                // 将链接移到这个分类，并放在末尾
+                const draggedLink = links[sourceCategoryName].splice(sourceIndex, 1)[0];
+                
+                // 确保目标分类存在
+                if (!links[category]) {
+                    links[category] = [];
+                }
+                
+                // 在新分类中插入
+                links[category].push(draggedLink);
+                
+                // 保存到本地存储
+                localStorage.setItem('navLinks', JSON.stringify(links));
+                
+                // 重新渲染
+                renderApplications();
+                renderBookmarks();
+            }
+        });
         
         // 添加书签
         if (links[category] && links[category].length > 0) {
@@ -1069,6 +1097,7 @@ async function fetchSiteNameAndTitle(url) {
 let draggedItem = null;
 let sourceCategoryName = '';
 let sourceIndex = 0;
+let isDraggingLink = false; // 新增：标记是否在拖拽链接而不是分类
 
 function handleDragStart(e) {
     // 设置拖拽效果和数据
@@ -1078,11 +1107,15 @@ function handleDragStart(e) {
     draggedItem = this;
     sourceCategoryName = this.dataset.category;
     sourceIndex = parseInt(this.dataset.index);
+    isDraggingLink = true; // 设置为正在拖拽链接
     
     // 添加一个类以改变拖拽元素的外观
     setTimeout(() => {
         this.classList.add('dragging');
     }, 0);
+    
+    // 添加一个自定义数据类型以区分拖动的是链接还是分类
+    e.dataTransfer.setData('application/x-item-type', 'link');
 }
 
 // 处理拖拽经过事件
@@ -1093,8 +1126,8 @@ function handleDragOver(e) {
     // 设置放置效果
     e.dataTransfer.dropEffect = 'move';
     
-    // 如果是不同的元素，添加拖拽经过的视觉效果
-    if (draggedItem !== this) {
+    // 只有在拖拽链接时才添加视觉效果
+    if (isDraggingLink && draggedItem !== this) {
         this.classList.add('drag-over');
     }
     
@@ -1113,36 +1146,39 @@ function handleDrop(e) {
         return false;
     }
     
-    // 获取目标元素的位置信息
-    const targetCategoryName = this.dataset.category;
-    const targetIndex = parseInt(this.dataset.index);
-    
-    // 在相同分类内重新排序
-    if (sourceCategoryName === targetCategoryName) {
-        // 获取拖拽的链接对象
-        const draggedLink = links[sourceCategoryName].splice(sourceIndex, 1)[0];
+    // 只处理链接拖拽，不处理分类拖拽
+    if (isDraggingLink) {
+        // 获取目标元素的位置信息
+        const targetCategoryName = this.dataset.category;
+        const targetIndex = parseInt(this.dataset.index);
         
-        // 在新位置插入
-        links[targetCategoryName].splice(targetIndex, 0, draggedLink);
-    } else {
-        // 跨分类移动（如果允许）
-        const draggedLink = links[sourceCategoryName].splice(sourceIndex, 1)[0];
-        
-        // 确保目标分类存在
-        if (!links[targetCategoryName]) {
-            links[targetCategoryName] = [];
+        // 在相同分类内重新排序
+        if (sourceCategoryName === targetCategoryName) {
+            // 获取拖拽的链接对象
+            const draggedLink = links[sourceCategoryName].splice(sourceIndex, 1)[0];
+            
+            // 在新位置插入
+            links[targetCategoryName].splice(targetIndex, 0, draggedLink);
+        } else {
+            // 跨分类移动（如果允许）
+            const draggedLink = links[sourceCategoryName].splice(sourceIndex, 1)[0];
+            
+            // 确保目标分类存在
+            if (!links[targetCategoryName]) {
+                links[targetCategoryName] = [];
+            }
+            
+            // 在新分类中插入
+            links[targetCategoryName].splice(targetIndex, 0, draggedLink);
         }
         
-        // 在新分类中插入
-        links[targetCategoryName].splice(targetIndex, 0, draggedLink);
+        // 保存到本地存储
+        localStorage.setItem('navLinks', JSON.stringify(links));
+        
+        // 重新渲染
+        renderApplications();
+        renderBookmarks();
     }
-    
-    // 保存到本地存储
-    localStorage.setItem('navLinks', JSON.stringify(links));
-    
-    // 重新渲染
-    renderApplications();
-    renderBookmarks();
     
     return false;
 }
@@ -1159,6 +1195,7 @@ function handleDragEnd() {
     
     // 重置拖拽状态
     draggedItem = null;
+    isDraggingLink = false;
 }
 
 // 为触摸设备初始化拖拽排序
@@ -1169,6 +1206,8 @@ function initDragSortTouch() {
     let touchMoving = false;
     let touchTarget = null;
     let ghostElement = null;
+    let isTouchDraggingLink = false;
+    let isTouchDraggingCategory = false;
     
     // 创建触摸拖拽的幽灵元素
     function createGhostElement(element) {
@@ -1181,12 +1220,26 @@ function initDragSortTouch() {
         return ghost;
     }
     
-    // 监听触摸开始事件
+    // 监听触摸开始事件 - 链接
     document.addEventListener('touchstart', (e) => {
-        const target = e.target.closest('.application-item, .category li');
-        if (!target) return;
+        const linkTarget = e.target.closest('.application-item, .category li');
+        const categoryTarget = e.target.closest('.category-title-container');
         
-        touchTarget = target;
+        // 优先处理链接拖拽
+        if (linkTarget) {
+            touchTarget = linkTarget;
+            isTouchDraggingLink = true;
+            isTouchDraggingCategory = false;
+        } 
+        // 如果不是链接且是分类标题，则处理分类拖拽
+        else if (categoryTarget) {
+            touchTarget = categoryTarget;
+            isTouchDraggingCategory = true;
+            isTouchDraggingLink = false;
+        } else {
+            return; // 不是可拖拽元素
+        }
+        
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
         
@@ -1197,8 +1250,15 @@ function initDragSortTouch() {
             updateGhostPosition(e.touches[0].clientX, e.touches[0].clientY);
             
             touchTarget.classList.add('dragging');
-            sourceCategoryName = touchTarget.dataset.category;
-            sourceIndex = parseInt(touchTarget.dataset.index);
+            
+            if (isTouchDraggingLink) {
+                sourceCategoryName = touchTarget.dataset.category;
+                sourceIndex = parseInt(touchTarget.dataset.index);
+                isDraggingLink = true;
+            } else if (isTouchDraggingCategory) {
+                draggedCategory = touchTarget;
+                isDraggingCategory = true;
+            }
         }, 300);
     });
     
@@ -1230,20 +1290,33 @@ function initDragSortTouch() {
                 
                 // 寻找可放置的目标
                 const elementsAtPoint = document.elementsFromPoint(touchX, touchY);
-                const dropTarget = elementsAtPoint.find(el => 
-                    (el.classList.contains('application-item') || 
-                     el.closest('.category li')) && 
-                    el !== touchTarget
-                );
                 
                 // 移除所有drag-over效果
                 document.querySelectorAll('.drag-over').forEach(el => {
                     el.classList.remove('drag-over');
                 });
                 
-                // 为当前悬停的元素添加效果
-                if (dropTarget) {
-                    dropTarget.classList.add('drag-over');
+                if (isTouchDraggingLink) {
+                    const dropTarget = elementsAtPoint.find(el => 
+                        (el.classList.contains('application-item') || 
+                         el.closest('.category li')) && 
+                        el !== touchTarget
+                    );
+                    
+                    // 为当前悬停的链接元素添加效果
+                    if (dropTarget) {
+                        dropTarget.classList.add('drag-over');
+                    }
+                } else if (isTouchDraggingCategory) {
+                    const dropTarget = elementsAtPoint.find(el => 
+                        el.classList.contains('category-title-container') && 
+                        el !== touchTarget
+                    );
+                    
+                    // 为当前悬停的分类标题元素添加效果
+                    if (dropTarget) {
+                        dropTarget.classList.add('drag-over');
+                    }
                 }
             }
         }
@@ -1260,43 +1333,75 @@ function initDragSortTouch() {
             
             // 寻找放置目标
             const elementsAtPoint = document.elementsFromPoint(touchX, touchY);
-            const dropTarget = elementsAtPoint.find(el => 
-                (el.classList.contains('application-item') || 
-                 el.closest('.category li')) && 
-                el !== touchTarget
-            );
             
-            // 如果找到放置目标，处理数据移动
-            if (dropTarget) {
-                const targetCategoryName = dropTarget.dataset.category;
-                const targetIndex = parseInt(dropTarget.dataset.index);
+            if (isTouchDraggingLink) {
+                const dropTarget = elementsAtPoint.find(el => 
+                    (el.classList.contains('application-item') || 
+                     el.closest('.category li')) && 
+                    el !== touchTarget
+                );
                 
-                // 处理排序逻辑
-                if (sourceCategoryName === targetCategoryName) {
-                    // 获取拖拽的链接对象
-                    const draggedLink = links[sourceCategoryName].splice(sourceIndex, 1)[0];
+                // 如果找到放置目标，处理链接移动
+                if (dropTarget) {
+                    const targetCategoryName = dropTarget.dataset.category;
+                    const targetIndex = parseInt(dropTarget.dataset.index);
                     
-                    // 在新位置插入
-                    links[targetCategoryName].splice(targetIndex, 0, draggedLink);
-                } else {
-                    // 跨分类移动
-                    const draggedLink = links[sourceCategoryName].splice(sourceIndex, 1)[0];
-                    
-                    // 确保目标分类存在
-                    if (!links[targetCategoryName]) {
-                        links[targetCategoryName] = [];
+                    // 处理排序逻辑
+                    if (sourceCategoryName === targetCategoryName) {
+                        // 获取拖拽的链接对象
+                        const draggedLink = links[sourceCategoryName].splice(sourceIndex, 1)[0];
+                        
+                        // 在新位置插入
+                        links[targetCategoryName].splice(targetIndex, 0, draggedLink);
+                    } else {
+                        // 跨分类移动
+                        const draggedLink = links[sourceCategoryName].splice(sourceIndex, 1)[0];
+                        
+                        // 确保目标分类存在
+                        if (!links[targetCategoryName]) {
+                            links[targetCategoryName] = [];
+                        }
+                        
+                        // 在新分类中插入
+                        links[targetCategoryName].splice(targetIndex, 0, draggedLink);
                     }
                     
-                    // 在新分类中插入
-                    links[targetCategoryName].splice(targetIndex, 0, draggedLink);
+                    // 保存到本地存储
+                    localStorage.setItem('navLinks', JSON.stringify(links));
+                    
+                    // 重新渲染
+                    renderApplications();
+                    renderBookmarks();
                 }
+            } else if (isTouchDraggingCategory) {
+                const dropTarget = elementsAtPoint.find(el => 
+                    el.classList.contains('category-title-container') && 
+                    el !== touchTarget
+                );
                 
-                // 保存到本地存储
-                localStorage.setItem('navLinks', JSON.stringify(links));
-                
-                // 重新渲染
-                renderApplications();
-                renderBookmarks();
+                // 如果找到放置目标，处理分类移动
+                if (dropTarget) {
+                    const targetCategory = dropTarget.dataset.category;
+                    const sourceCategory = touchTarget.dataset.category;
+                    
+                    // 在分类顺序数组中交换位置
+                    const sourceIndex = links.categoryOrder.indexOf(sourceCategory);
+                    const targetIndex = links.categoryOrder.indexOf(targetCategory);
+                    
+                    if (sourceIndex !== -1 && targetIndex !== -1) {
+                        // 从源位置移除
+                        links.categoryOrder.splice(sourceIndex, 1);
+                        
+                        // 插入到目标位置
+                        links.categoryOrder.splice(targetIndex, 0, sourceCategory);
+                        
+                        // 保存更新后的顺序
+                        localStorage.setItem('navLinks', JSON.stringify(links));
+                        
+                        // 重新渲染书签区域
+                        renderBookmarks();
+                    }
+                }
             }
             
             // 移除幽灵元素
@@ -1315,7 +1420,104 @@ function initDragSortTouch() {
         
         touchTarget = null;
         touchMoving = false;
+        isDraggingLink = false;
+        isDraggingCategory = false;
+        isTouchDraggingLink = false;
+        isTouchDraggingCategory = false;
     });
+}
+
+// 分类拖拽排序相关变量
+let draggedCategory = null;
+let isDraggingCategory = false; // 新增：标记是否在拖拽分类而不是链接
+
+// 处理分类拖拽开始事件
+function handleCategoryDragStart(e) {
+    // 设置拖拽效果和数据
+    e.dataTransfer.effectAllowed = 'move';
+    
+    // 存储拖拽的分类信息
+    draggedCategory = this;
+    isDraggingCategory = true; // 设置为正在拖拽分类
+    
+    // 添加拖拽中的视觉效果
+    setTimeout(() => {
+        this.classList.add('dragging');
+    }, 0);
+    
+    // 添加一个自定义数据类型以区分拖动的是链接还是分类
+    e.dataTransfer.setData('application/x-item-type', 'category');
+}
+
+// 处理分类拖拽经过事件
+function handleCategoryDragOver(e) {
+    // 阻止默认行为以允许放置
+    e.preventDefault();
+    
+    // 设置放置效果
+    e.dataTransfer.dropEffect = 'move';
+    
+    // 如果是不同的分类标题，且当前正在拖拽的是分类，添加拖拽经过的视觉效果
+    if (isDraggingCategory && draggedCategory !== this && this.classList.contains('category-title-container')) {
+        this.classList.add('drag-over');
+    }
+    
+    return false;
+}
+
+// 处理分类放置事件
+function handleCategoryDrop(e) {
+    e.preventDefault();
+    
+    // 移除拖拽经过的视觉效果
+    this.classList.remove('drag-over');
+    
+    // 如果拖放在自己身上，不做任何操作
+    if (draggedCategory === this) {
+        return false;
+    }
+    
+    // 只处理分类拖拽，不处理链接拖拽
+    if (isDraggingCategory) {
+        // 获取目标元素和源元素的分类键
+        const targetCategory = this.dataset.category;
+        const sourceCategory = draggedCategory.dataset.category;
+        
+        // 在分类顺序数组中交换位置
+        const sourceIndex = links.categoryOrder.indexOf(sourceCategory);
+        const targetIndex = links.categoryOrder.indexOf(targetCategory);
+        
+        if (sourceIndex !== -1 && targetIndex !== -1) {
+            // 从源位置移除
+            links.categoryOrder.splice(sourceIndex, 1);
+            
+            // 插入到目标位置
+            links.categoryOrder.splice(targetIndex, 0, sourceCategory);
+            
+            // 保存更新后的顺序
+            localStorage.setItem('navLinks', JSON.stringify(links));
+            
+            // 重新渲染书签区域
+            renderBookmarks();
+        }
+    }
+    
+    return false;
+}
+
+// 处理分类拖拽结束事件
+function handleCategoryDragEnd() {
+    // 移除拖拽中的视觉效果
+    this.classList.remove('dragging');
+    
+    // 移除所有分类元素上的拖拽经过效果
+    document.querySelectorAll('.category').forEach(item => {
+        item.classList.remove('drag-over');
+    });
+    
+    // 重置拖拽状态
+    draggedCategory = null;
+    isDraggingCategory = false;
 }
 
 // 添加分类管理模态窗口的DOM元素引用
@@ -1363,13 +1565,19 @@ function renderCategoryList() {
         const itemEl = document.createElement('div');
         itemEl.className = 'category-list-item';
         itemEl.dataset.category = category;
-        itemEl.draggable = true;
+        
+        // 创建拖拽手柄，只让手柄可拖拽
+        const dragHandleEl = document.createElement('div');
+        dragHandleEl.className = 'category-list-drag-handle';
+        dragHandleEl.innerHTML = '<i class="fas fa-grip-vertical"></i>';
+        dragHandleEl.dataset.category = category;
+        dragHandleEl.draggable = true;
         
         // 添加拖拽事件处理
-        itemEl.addEventListener('dragstart', handleCategoryListDragStart);
-        itemEl.addEventListener('dragover', handleCategoryListDragOver);
-        itemEl.addEventListener('drop', handleCategoryListDrop);
-        itemEl.addEventListener('dragend', handleCategoryListDragEnd);
+        dragHandleEl.addEventListener('dragstart', handleCategoryListDragStart);
+        dragHandleEl.addEventListener('dragover', handleCategoryListDragOver);
+        dragHandleEl.addEventListener('drop', handleCategoryListDrop);
+        dragHandleEl.addEventListener('dragend', handleCategoryListDragEnd);
         
         // 创建分类名称和图标数量
         const nameEl = document.createElement('div');
@@ -1379,10 +1587,6 @@ function renderCategoryList() {
         const countEl = document.createElement('div');
         countEl.className = 'category-list-count';
         countEl.textContent = links[category] ? links[category].length : 0;
-        
-        const dragHandleEl = document.createElement('div');
-        dragHandleEl.className = 'category-list-drag-handle';
-        dragHandleEl.innerHTML = '<i class="fas fa-grip-vertical"></i>';
         
         const btnContainer = document.createElement('div');
         btnContainer.className = 'category-list-buttons';
@@ -1419,8 +1623,111 @@ function renderCategoryList() {
     });
 }
 
-// 分类拖拽排序相关变量
-let draggedCategory = null;
+// 分类列表拖拽相关
+let draggedCategoryListItem = null;
+
+// 处理分类列表拖拽开始事件
+function handleCategoryListDragStart(e) {
+    // 设置拖拽效果和数据
+    e.dataTransfer.effectAllowed = 'move';
+    
+    // 存储拖拽的分类信息（使用父元素，即分类项）
+    draggedCategoryListItem = this.closest('.category-list-item');
+    
+    // 添加拖拽中的视觉效果
+    setTimeout(() => {
+        draggedCategoryListItem.classList.add('dragging');
+    }, 0);
+}
+
+// 处理分类列表拖拽经过事件
+function handleCategoryListDragOver(e) {
+    // 阻止默认行为以允许放置
+    e.preventDefault();
+    
+    // 设置放置效果
+    e.dataTransfer.dropEffect = 'move';
+    
+    // 找到最近的分类项
+    const listItem = this.closest('.category-list-item');
+    
+    // 如果是不同的分类项，添加拖拽经过的视觉效果
+    if (draggedCategoryListItem !== listItem && listItem) {
+        listItem.classList.add('drag-over');
+    }
+    
+    return false;
+}
+
+// 处理分类列表放置事件
+function handleCategoryListDrop(e) {
+    e.preventDefault();
+    
+    // 找到最近的分类项
+    const listItem = this.closest('.category-list-item');
+    if (!listItem) return false;
+    
+    // 移除拖拽经过的视觉效果
+    listItem.classList.remove('drag-over');
+    
+    // 如果拖放在自己身上，不做任何操作
+    if (draggedCategoryListItem === listItem) {
+        return false;
+    }
+    
+    // 获取源分类和目标分类
+    const sourceCategory = draggedCategoryListItem.dataset.category;
+    const targetCategory = listItem.dataset.category;
+    
+    // 在分类顺序数组中移动位置
+    const sourceIndex = links.categoryOrder.indexOf(sourceCategory);
+    const targetIndex = links.categoryOrder.indexOf(targetCategory);
+    
+    if (sourceIndex !== -1 && targetIndex !== -1) {
+        // 从源位置移除
+        links.categoryOrder.splice(sourceIndex, 1);
+        
+        // 插入到目标位置
+        links.categoryOrder.splice(targetIndex, 0, sourceCategory);
+        
+        // 保存更新后的顺序
+        localStorage.setItem('navLinks', JSON.stringify(links));
+        
+        // 重新渲染分类列表和书签区域
+        renderCategoryList();
+        renderBookmarks();
+    }
+    
+    return false;
+}
+
+// 处理分类列表拖拽结束事件
+function handleCategoryListDragEnd() {
+    // 移除拖拽中的视觉效果
+    if (draggedCategoryListItem) {
+        draggedCategoryListItem.classList.remove('dragging');
+    }
+    
+    // 移除所有分类列表项上的拖拽经过效果
+    document.querySelectorAll('.category-list-item').forEach(item => {
+        item.classList.remove('drag-over');
+    });
+    
+    // 重置拖拽状态
+    draggedCategoryListItem = null;
+}
+
+// 初始化分类拖拽功能
+function initCategoryDragSort() {
+    // 分类级别的拖拽功能已经在renderBookmarks中实现
+    
+    // 为分类管理设置事件监听
+    categoryForm.addEventListener('submit', handleAddCategory);
+    categoryEditForm.addEventListener('submit', handleEditCategory);
+    categoryCloseBtn.addEventListener('click', closeCategoryModal);
+    categoryEditCloseBtn.addEventListener('click', closeCategoryEditModal);
+    deleteCategoryBtn.addEventListener('click', handleDeleteCategory);
+}
 
 // 添加新分类
 function addNewCategory(name, key) {
@@ -1598,184 +1905,6 @@ function handleDeleteCategory() {
             closeCategoryEditModal();
         }
     }
-}
-
-// 处理分类拖拽开始事件
-function handleCategoryDragStart(e) {
-    // 设置拖拽效果和数据
-    e.dataTransfer.effectAllowed = 'move';
-    
-    // 存储拖拽的分类信息
-    draggedCategory = this;
-    
-    // 添加拖拽中的视觉效果
-    setTimeout(() => {
-        this.classList.add('dragging');
-    }, 0);
-}
-
-// 处理分类拖拽经过事件
-function handleCategoryDragOver(e) {
-    // 阻止默认行为以允许放置
-    e.preventDefault();
-    
-    // 设置放置效果
-    e.dataTransfer.dropEffect = 'move';
-    
-    // 如果是不同的分类，添加拖拽经过的视觉效果
-    if (draggedCategory !== this && this.classList.contains('category')) {
-        this.classList.add('drag-over');
-    }
-    
-    return false;
-}
-
-// 处理分类放置事件
-function handleCategoryDrop(e) {
-    e.preventDefault();
-    
-    // 移除拖拽经过的视觉效果
-    this.classList.remove('drag-over');
-    
-    // 如果拖放在自己身上，不做任何操作
-    if (draggedCategory === this) {
-        return false;
-    }
-    
-    // 获取目标元素和源元素的分类键
-    const targetCategory = this.dataset.category;
-    const sourceCategory = draggedCategory.dataset.category;
-    
-    // 在分类顺序数组中交换位置
-    const sourceIndex = links.categoryOrder.indexOf(sourceCategory);
-    const targetIndex = links.categoryOrder.indexOf(targetCategory);
-    
-    if (sourceIndex !== -1 && targetIndex !== -1) {
-        // 从源位置移除
-        links.categoryOrder.splice(sourceIndex, 1);
-        
-        // 插入到目标位置
-        links.categoryOrder.splice(targetIndex, 0, sourceCategory);
-        
-        // 保存更新后的顺序
-        localStorage.setItem('navLinks', JSON.stringify(links));
-        
-        // 重新渲染书签区域
-        renderBookmarks();
-    }
-    
-    return false;
-}
-
-// 处理分类拖拽结束事件
-function handleCategoryDragEnd() {
-    // 移除拖拽中的视觉效果
-    this.classList.remove('dragging');
-    
-    // 移除所有分类元素上的拖拽经过效果
-    document.querySelectorAll('.category').forEach(item => {
-        item.classList.remove('drag-over');
-    });
-    
-    // 重置拖拽状态
-    draggedCategory = null;
-}
-
-// 分类列表拖拽相关
-let draggedCategoryListItem = null;
-
-// 处理分类列表拖拽开始事件
-function handleCategoryListDragStart(e) {
-    // 设置拖拽效果和数据
-    e.dataTransfer.effectAllowed = 'move';
-    
-    // 存储拖拽的分类信息
-    draggedCategoryListItem = this;
-    
-    // 添加拖拽中的视觉效果
-    setTimeout(() => {
-        this.classList.add('dragging');
-    }, 0);
-}
-
-// 处理分类列表拖拽经过事件
-function handleCategoryListDragOver(e) {
-    // 阻止默认行为以允许放置
-    e.preventDefault();
-    
-    // 设置放置效果
-    e.dataTransfer.dropEffect = 'move';
-    
-    // 如果是不同的分类项，添加拖拽经过的视觉效果
-    if (draggedCategoryListItem !== this && this.classList.contains('category-list-item')) {
-        this.classList.add('drag-over');
-    }
-    
-    return false;
-}
-
-// 处理分类列表放置事件
-function handleCategoryListDrop(e) {
-    e.preventDefault();
-    
-    // 移除拖拽经过的视觉效果
-    this.classList.remove('drag-over');
-    
-    // 如果拖放在自己身上，不做任何操作
-    if (draggedCategoryListItem === this) {
-        return false;
-    }
-    
-    // 获取源分类和目标分类
-    const sourceCategory = draggedCategoryListItem.dataset.category;
-    const targetCategory = this.dataset.category;
-    
-    // 在分类顺序数组中移动位置
-    const sourceIndex = links.categoryOrder.indexOf(sourceCategory);
-    const targetIndex = links.categoryOrder.indexOf(targetCategory);
-    
-    if (sourceIndex !== -1 && targetIndex !== -1) {
-        // 从源位置移除
-        links.categoryOrder.splice(sourceIndex, 1);
-        
-        // 插入到目标位置
-        links.categoryOrder.splice(targetIndex, 0, sourceCategory);
-        
-        // 保存更新后的顺序
-        localStorage.setItem('navLinks', JSON.stringify(links));
-        
-        // 重新渲染分类列表和书签区域
-        renderCategoryList();
-        renderBookmarks();
-    }
-    
-    return false;
-}
-
-// 处理分类列表拖拽结束事件
-function handleCategoryListDragEnd() {
-    // 移除拖拽中的视觉效果
-    this.classList.remove('dragging');
-    
-    // 移除所有分类列表项上的拖拽经过效果
-    document.querySelectorAll('.category-list-item').forEach(item => {
-        item.classList.remove('drag-over');
-    });
-    
-    // 重置拖拽状态
-    draggedCategoryListItem = null;
-}
-
-// 初始化分类拖拽功能
-function initCategoryDragSort() {
-    // 分类级别的拖拽功能已经在renderBookmarks中实现
-    
-    // 为分类管理设置事件监听
-    categoryForm.addEventListener('submit', handleAddCategory);
-    categoryEditForm.addEventListener('submit', handleEditCategory);
-    categoryCloseBtn.addEventListener('click', closeCategoryModal);
-    categoryEditCloseBtn.addEventListener('click', closeCategoryEditModal);
-    deleteCategoryBtn.addEventListener('click', handleDeleteCategory);
 }
 
 // 初始化页面
