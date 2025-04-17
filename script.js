@@ -53,7 +53,9 @@ const initialLinks = {
         { name: 'Miro', url: 'https://miro.com', icon: 'fa-sticky-note', faviconUrl: getFaviconUrl('https://miro.com') },
         { name: 'Todoist', url: 'https://todoist.com', icon: 'fa-check-square', faviconUrl: getFaviconUrl('https://todoist.com') },
         { name: 'Trello', url: 'https://trello.com', icon: 'fa-trello', faviconUrl: getFaviconUrl('https://trello.com') }
-    ]
+    ],
+    // 分类顺序数组
+    categoryOrder: ['cloud', 'design', 'games', 'media', 'music', 'news', 'programming', 'projects']
 };
 
 // DOM 元素
@@ -80,6 +82,13 @@ const recentUrlsDropdown = document.getElementById('recent-urls-dropdown');
 
 // 获取本地存储的链接或使用初始数据
 let links = JSON.parse(localStorage.getItem('navLinks')) || initialLinks;
+
+// 确保links中有categoryOrder数组
+if (!links.categoryOrder) {
+    // 如果没有分类顺序数组，则创建一个，包含所有非applications分类
+    links.categoryOrder = Object.keys(links).filter(key => key !== 'applications' && key !== 'categoryOrder');
+    localStorage.setItem('navLinks', JSON.stringify(links));
+}
 
 // 获取最近添加的URL历史记录
 let recentUrls = JSON.parse(localStorage.getItem('recentUrls')) || [];
@@ -110,6 +119,7 @@ function initPage() {
     window.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
         if (e.target === editModal) closeEditModal();
+        if (e.target === categoryModal) closeCategoryModal();
         
         // 点击其他区域关闭历史记录下拉菜单
         if (!e.target.closest('#recent-urls-btn') && !e.target.closest('#recent-urls-dropdown')) {
@@ -126,6 +136,7 @@ function initPage() {
     importFileInput.addEventListener('change', handleImportFile);
     refreshIconsBtn.addEventListener('click', refreshAllIcons);
     toggleLanguageBtn.addEventListener('click', toggleLanguage);
+    manageCategoriesBtn.addEventListener('click', openCategoryModal);
     
     // 自动获取名称按钮事件
     fetchNameBtn.addEventListener('click', handleFetchName);
@@ -146,6 +157,9 @@ function initPage() {
     
     // 初始化拖拽排序功能
     initDragSortTouch();
+    
+    // 初始化分类拖拽功能
+    initCategoryDragSort();
     
     // 设置页面标题
     document.title = getText('appTitle');
@@ -195,6 +209,7 @@ function applyLanguage() {
     document.getElementById('refresh-icons-btn').textContent = getText('refreshIcons');
     document.getElementById('export-btn').textContent = getText('exportLinks');
     document.getElementById('import-label').textContent = getText('importLinks');
+    document.getElementById('manage-categories-btn').textContent = getText('manageCategories');
     
     // 更新分类下拉菜单选项
     updateCategoryOptions('link-category');
@@ -207,6 +222,17 @@ function applyLanguage() {
     if (recentUrlsDropdown.classList.contains('active')) {
         renderRecentUrls();
     }
+    
+    // 更新分类管理模态窗口
+    document.getElementById('category-modal-title').textContent = getText('manageCategories');
+    document.getElementById('add-category-btn').textContent = getText('addCategory');
+    document.getElementById('new-category-name').placeholder = getText('newCategoryName');
+    
+    // 更新分类编辑模态窗口
+    document.getElementById('category-edit-title').textContent = getText('editCategory');
+    document.querySelector('#category-edit-form label').textContent = getText('categoryName');
+    document.querySelector('#category-edit-form .edit-btn').textContent = getText('update');
+    document.getElementById('delete-category-btn').textContent = getText('delete');
 }
 
 // 更新分类下拉菜单选项的文本
@@ -320,16 +346,81 @@ function renderApplications() {
 
 // 渲染书签部分
 function renderBookmarks() {
-    const categories = ['cloud', 'design', 'games', 'media', 'music', 'news', 'programming', 'projects'];
+    const categoryContainer = document.querySelectorAll('.category-container');
     
-    categories.forEach(category => {
-        const container = document.getElementById(`${category}-links`);
+    // 清空现有分类容器
+    categoryContainer.forEach(container => {
         container.innerHTML = '';
+    });
+    
+    // 获取分类排序数组
+    const categoryOrder = links.categoryOrder || [];
+    
+    // 确保所有分类都在排序数组中
+    // 获取所有非applications的分类
+    const allCategories = Object.keys(links).filter(key => key !== 'applications' && key !== 'categoryOrder');
+    
+    // 添加任何不在排序数组中的分类
+    allCategories.forEach(category => {
+        if (!categoryOrder.includes(category)) {
+            categoryOrder.push(category);
+        }
+    });
+    
+    // 移除排序数组中不存在的分类
+    for (let i = categoryOrder.length - 1; i >= 0; i--) {
+        if (!allCategories.includes(categoryOrder[i])) {
+            categoryOrder.splice(i, 1);
+        }
+    }
+    
+    // 保存更新后的排序数组
+    links.categoryOrder = categoryOrder;
+    localStorage.setItem('navLinks', JSON.stringify(links));
+    
+    // 为每个分类创建HTML元素
+    categoryOrder.forEach((category, index) => {
+        // 创建分类元素
+        const categoryDiv = document.createElement('div');
+        categoryDiv.className = 'category';
+        categoryDiv.dataset.category = category;
+        categoryDiv.draggable = true;
         
-        if (links[category]) {
-            links[category].forEach((link, index) => {
+        // 添加拖拽事件监听器
+        categoryDiv.addEventListener('dragstart', handleCategoryDragStart);
+        categoryDiv.addEventListener('dragover', handleCategoryDragOver);
+        categoryDiv.addEventListener('drop', handleCategoryDrop);
+        categoryDiv.addEventListener('dragend', handleCategoryDragEnd);
+        
+        // 创建标题和操作按钮
+        const titleContainer = document.createElement('div');
+        titleContainer.className = 'category-title-container';
+        
+        const title = document.createElement('h3');
+        title.id = `${category}-title`;
+        title.textContent = getText(category);
+        titleContainer.appendChild(title);
+        
+        // 添加编辑按钮
+        const editButton = document.createElement('button');
+        editButton.className = 'category-edit-btn';
+        editButton.innerHTML = '<i class="fas fa-edit"></i>';
+        editButton.addEventListener('click', () => {
+            openCategoryEditModal(category);
+        });
+        titleContainer.appendChild(editButton);
+        
+        categoryDiv.appendChild(titleContainer);
+        
+        // 创建书签列表
+        const ul = document.createElement('ul');
+        ul.id = `${category}-links`;
+        
+        // 添加书签
+        if (links[category] && links[category].length > 0) {
+            links[category].forEach((link, linkIndex) => {
                 const li = document.createElement('li');
-                li.dataset.index = index;
+                li.dataset.index = linkIndex;
                 li.dataset.category = category;
                 
                 // 添加拖拽属性
@@ -361,12 +452,60 @@ function renderBookmarks() {
                 // 右键菜单
                 li.addEventListener('contextmenu', (e) => {
                     e.preventDefault();
-                    showEditOptions(category, index, e);
+                    showEditOptions(category, linkIndex, e);
                 });
                 
                 li.appendChild(a);
-                container.appendChild(li);
+                ul.appendChild(li);
             });
+        }
+        
+        categoryDiv.appendChild(ul);
+        
+        // 根据索引决定添加到哪个容器
+        const containerIndex = Math.floor(index / 4);  // 每个容器最多4个分类
+        const targetContainer = categoryContainer[Math.min(containerIndex, categoryContainer.length - 1)];
+        targetContainer.appendChild(categoryDiv);
+    });
+    
+    // 更新选择菜单中的分类选项
+    updateCategorySelectOptions();
+}
+
+// 更新分类选择下拉菜单
+function updateCategorySelectOptions() {
+    // 获取分类选择器
+    const categorySelectors = [
+        document.getElementById('link-category'),
+        document.getElementById('edit-link-new-category')
+    ];
+    
+    // 获取分类列表（除了applications）
+    const categories = Object.keys(links).filter(key => key !== 'applications');
+    
+    // 更新每个选择器
+    categorySelectors.forEach(selector => {
+        if (!selector) return;
+        
+        // 保存当前选中的值
+        const currentValue = selector.value;
+        
+        // 清除现有选项（保留applications选项）
+        while (selector.options.length > 1) {
+            selector.remove(1);
+        }
+        
+        // 添加分类选项
+        categories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category;
+            option.textContent = getText(category);
+            selector.appendChild(option);
+        });
+        
+        // 恢复之前选中的值，如果可能的话
+        if (categories.includes(currentValue)) {
+            selector.value = currentValue;
         }
     });
 }
@@ -1177,6 +1316,466 @@ function initDragSortTouch() {
         touchTarget = null;
         touchMoving = false;
     });
+}
+
+// 添加分类管理模态窗口的DOM元素引用
+const categoryModal = document.getElementById('category-modal');
+const categoryCloseBtn = document.getElementById('category-close');
+const categoryForm = document.getElementById('category-form');
+const categoryList = document.getElementById('category-list');
+const addCategoryBtn = document.getElementById('add-category-btn');
+const manageCategoriesBtn = document.getElementById('manage-categories-btn');
+
+// 分类编辑模态窗口的DOM元素引用
+const categoryEditModal = document.getElementById('category-edit-modal');
+const categoryEditCloseBtn = document.getElementById('category-edit-close');
+const categoryEditForm = document.getElementById('category-edit-form');
+const categoryNameInput = document.getElementById('category-name');
+const categoryKeyInput = document.getElementById('category-key');
+const deleteCategoryBtn = document.getElementById('delete-category-btn');
+
+// 打开分类管理模态窗口
+function openCategoryModal() {
+    renderCategoryList();
+    categoryModal.style.display = 'block';
+    dropdownMenu.classList.remove('active'); // 关闭主菜单
+}
+
+// 关闭分类管理模态窗口
+function closeCategoryModal() {
+    categoryModal.style.display = 'none';
+}
+
+// 渲染分类列表
+function renderCategoryList() {
+    categoryList.innerHTML = '';
+    
+    // 使用分类排序数组
+    const categoryOrder = links.categoryOrder || [];
+    
+    // 添加提示信息
+    const tipEl = document.createElement('div');
+    tipEl.className = 'category-tip';
+    tipEl.innerHTML = `<i class="fas fa-info-circle"></i> ${getText('dragToReorder')}`;
+    categoryList.appendChild(tipEl);
+    
+    categoryOrder.forEach(category => {
+        const itemEl = document.createElement('div');
+        itemEl.className = 'category-list-item';
+        itemEl.dataset.category = category;
+        itemEl.draggable = true;
+        
+        // 添加拖拽事件处理
+        itemEl.addEventListener('dragstart', handleCategoryListDragStart);
+        itemEl.addEventListener('dragover', handleCategoryListDragOver);
+        itemEl.addEventListener('drop', handleCategoryListDrop);
+        itemEl.addEventListener('dragend', handleCategoryListDragEnd);
+        
+        // 创建分类名称和图标数量
+        const nameEl = document.createElement('div');
+        nameEl.className = 'category-list-name';
+        nameEl.textContent = getText(category);
+        
+        const countEl = document.createElement('div');
+        countEl.className = 'category-list-count';
+        countEl.textContent = links[category] ? links[category].length : 0;
+        
+        const dragHandleEl = document.createElement('div');
+        dragHandleEl.className = 'category-list-drag-handle';
+        dragHandleEl.innerHTML = '<i class="fas fa-grip-vertical"></i>';
+        
+        const btnContainer = document.createElement('div');
+        btnContainer.className = 'category-list-buttons';
+        
+        // 编辑按钮
+        const editBtn = document.createElement('button');
+        editBtn.className = 'category-edit-btn';
+        editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+        editBtn.addEventListener('click', () => {
+            openCategoryEditModal(category);
+        });
+        
+        btnContainer.appendChild(editBtn);
+        
+        // 只有当分类为空时才允许删除
+        if (!links[category] || links[category].length === 0) {
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'category-delete-btn';
+            deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+            deleteBtn.addEventListener('click', () => {
+                if (confirm(getText('confirmDeleteCategory'))) {
+                    deleteCategory(category);
+                }
+            });
+            btnContainer.appendChild(deleteBtn);
+        }
+        
+        itemEl.appendChild(dragHandleEl);
+        itemEl.appendChild(nameEl);
+        itemEl.appendChild(countEl);
+        itemEl.appendChild(btnContainer);
+        
+        categoryList.appendChild(itemEl);
+    });
+}
+
+// 分类拖拽排序相关变量
+let draggedCategory = null;
+
+// 添加新分类
+function addNewCategory(name, key) {
+    // 如果没有提供key，从name生成
+    if (!key) {
+        key = name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+    }
+    
+    // 确保key是唯一的
+    if (links[key]) {
+        let counter = 1;
+        let newKey = `${key}_${counter}`;
+        while (links[newKey]) {
+            counter++;
+            newKey = `${key}_${counter}`;
+        }
+        key = newKey;
+    }
+    
+    // 添加到languages，以便getText可以使用
+    languages.zh[key] = name;
+    languages.en[key] = name; // 同样添加到英文版
+    
+    // 在links中创建新分类
+    links[key] = [];
+    
+    // 将新分类添加到分类顺序数组中
+    if (!links.categoryOrder) {
+        links.categoryOrder = [];
+    }
+    links.categoryOrder.push(key);
+    
+    // 保存到本地存储
+    localStorage.setItem('navLinks', JSON.stringify(links));
+    
+    // 重新渲染书签区域
+    renderBookmarks();
+    
+    return key;
+}
+
+// 重命名分类
+function renameCategory(oldKey, newName, newKey) {
+    // 如果没有提供新key，从新名称生成
+    if (!newKey) {
+        newKey = newName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+    }
+    
+    // 确保新key是唯一的，如果和旧key不同
+    if (oldKey !== newKey && links[newKey]) {
+        let counter = 1;
+        let tempKey = `${newKey}_${counter}`;
+        while (links[tempKey]) {
+            counter++;
+            tempKey = `${newKey}_${counter}`;
+        }
+        newKey = tempKey;
+    }
+    
+    // 更新languages
+    languages.zh[newKey] = newName;
+    languages.en[newKey] = newName; // 同样更新英文版
+    
+    // 如果key改变了，需要移动数据
+    if (oldKey !== newKey) {
+        links[newKey] = links[oldKey];
+        delete links[oldKey];
+        
+        // 在分类顺序数组中更新key
+        const index = links.categoryOrder.indexOf(oldKey);
+        if (index !== -1) {
+            links.categoryOrder[index] = newKey;
+        }
+        
+        // 更新本地存储
+        localStorage.setItem('navLinks', JSON.stringify(links));
+    }
+    
+    // 重新渲染书签区域
+    renderBookmarks();
+    renderCategoryList();
+    
+    return newKey;
+}
+
+// 删除分类
+function deleteCategory(key) {
+    // 只有当分类为空时才允许删除
+    if (links[key] && links[key].length > 0) {
+        alert(getText('cannotDeleteNonEmptyCategory'));
+        return false;
+    }
+    
+    // 从links中删除分类
+    delete links[key];
+    
+    // 从分类顺序数组中移除
+    const index = links.categoryOrder.indexOf(key);
+    if (index !== -1) {
+        links.categoryOrder.splice(index, 1);
+    }
+    
+    // 保存到本地存储
+    localStorage.setItem('navLinks', JSON.stringify(links));
+    
+    // 重新渲染
+    renderBookmarks();
+    renderCategoryList();
+    
+    return true;
+}
+
+// 打开分类编辑模态窗口
+function openCategoryEditModal(category) {
+    // 设置当前分类信息
+    categoryNameInput.value = getText(category);
+    categoryKeyInput.value = category;
+    
+    // 显示模态窗口
+    categoryEditModal.style.display = 'block';
+}
+
+// 关闭分类编辑模态窗口
+function closeCategoryEditModal() {
+    categoryEditModal.style.display = 'none';
+    categoryEditForm.reset();
+}
+
+// 处理添加分类表单提交
+function handleAddCategory(e) {
+    e.preventDefault();
+    
+    const name = document.getElementById('new-category-name').value.trim();
+    
+    if (!name) {
+        alert(getText('categoryNameRequired'));
+        return;
+    }
+    
+    // 添加新分类
+    addNewCategory(name);
+    
+    // 重新渲染分类列表
+    renderCategoryList();
+    
+    // 重置表单
+    document.getElementById('new-category-name').value = '';
+}
+
+// 处理分类编辑表单提交
+function handleEditCategory(e) {
+    e.preventDefault();
+    
+    const oldKey = categoryKeyInput.value;
+    const newName = categoryNameInput.value.trim();
+    
+    if (!newName) {
+        alert(getText('categoryNameRequired'));
+        return;
+    }
+    
+    // 重命名分类
+    renameCategory(oldKey, newName);
+    
+    // 关闭模态窗口
+    closeCategoryEditModal();
+}
+
+// 处理分类删除按钮点击
+function handleDeleteCategory() {
+    const category = categoryKeyInput.value;
+    
+    if (confirm(getText('confirmDeleteCategory'))) {
+        if (deleteCategory(category)) {
+            closeCategoryEditModal();
+        }
+    }
+}
+
+// 处理分类拖拽开始事件
+function handleCategoryDragStart(e) {
+    // 设置拖拽效果和数据
+    e.dataTransfer.effectAllowed = 'move';
+    
+    // 存储拖拽的分类信息
+    draggedCategory = this;
+    
+    // 添加拖拽中的视觉效果
+    setTimeout(() => {
+        this.classList.add('dragging');
+    }, 0);
+}
+
+// 处理分类拖拽经过事件
+function handleCategoryDragOver(e) {
+    // 阻止默认行为以允许放置
+    e.preventDefault();
+    
+    // 设置放置效果
+    e.dataTransfer.dropEffect = 'move';
+    
+    // 如果是不同的分类，添加拖拽经过的视觉效果
+    if (draggedCategory !== this && this.classList.contains('category')) {
+        this.classList.add('drag-over');
+    }
+    
+    return false;
+}
+
+// 处理分类放置事件
+function handleCategoryDrop(e) {
+    e.preventDefault();
+    
+    // 移除拖拽经过的视觉效果
+    this.classList.remove('drag-over');
+    
+    // 如果拖放在自己身上，不做任何操作
+    if (draggedCategory === this) {
+        return false;
+    }
+    
+    // 获取目标元素和源元素的分类键
+    const targetCategory = this.dataset.category;
+    const sourceCategory = draggedCategory.dataset.category;
+    
+    // 在分类顺序数组中交换位置
+    const sourceIndex = links.categoryOrder.indexOf(sourceCategory);
+    const targetIndex = links.categoryOrder.indexOf(targetCategory);
+    
+    if (sourceIndex !== -1 && targetIndex !== -1) {
+        // 从源位置移除
+        links.categoryOrder.splice(sourceIndex, 1);
+        
+        // 插入到目标位置
+        links.categoryOrder.splice(targetIndex, 0, sourceCategory);
+        
+        // 保存更新后的顺序
+        localStorage.setItem('navLinks', JSON.stringify(links));
+        
+        // 重新渲染书签区域
+        renderBookmarks();
+    }
+    
+    return false;
+}
+
+// 处理分类拖拽结束事件
+function handleCategoryDragEnd() {
+    // 移除拖拽中的视觉效果
+    this.classList.remove('dragging');
+    
+    // 移除所有分类元素上的拖拽经过效果
+    document.querySelectorAll('.category').forEach(item => {
+        item.classList.remove('drag-over');
+    });
+    
+    // 重置拖拽状态
+    draggedCategory = null;
+}
+
+// 分类列表拖拽相关
+let draggedCategoryListItem = null;
+
+// 处理分类列表拖拽开始事件
+function handleCategoryListDragStart(e) {
+    // 设置拖拽效果和数据
+    e.dataTransfer.effectAllowed = 'move';
+    
+    // 存储拖拽的分类信息
+    draggedCategoryListItem = this;
+    
+    // 添加拖拽中的视觉效果
+    setTimeout(() => {
+        this.classList.add('dragging');
+    }, 0);
+}
+
+// 处理分类列表拖拽经过事件
+function handleCategoryListDragOver(e) {
+    // 阻止默认行为以允许放置
+    e.preventDefault();
+    
+    // 设置放置效果
+    e.dataTransfer.dropEffect = 'move';
+    
+    // 如果是不同的分类项，添加拖拽经过的视觉效果
+    if (draggedCategoryListItem !== this && this.classList.contains('category-list-item')) {
+        this.classList.add('drag-over');
+    }
+    
+    return false;
+}
+
+// 处理分类列表放置事件
+function handleCategoryListDrop(e) {
+    e.preventDefault();
+    
+    // 移除拖拽经过的视觉效果
+    this.classList.remove('drag-over');
+    
+    // 如果拖放在自己身上，不做任何操作
+    if (draggedCategoryListItem === this) {
+        return false;
+    }
+    
+    // 获取源分类和目标分类
+    const sourceCategory = draggedCategoryListItem.dataset.category;
+    const targetCategory = this.dataset.category;
+    
+    // 在分类顺序数组中移动位置
+    const sourceIndex = links.categoryOrder.indexOf(sourceCategory);
+    const targetIndex = links.categoryOrder.indexOf(targetCategory);
+    
+    if (sourceIndex !== -1 && targetIndex !== -1) {
+        // 从源位置移除
+        links.categoryOrder.splice(sourceIndex, 1);
+        
+        // 插入到目标位置
+        links.categoryOrder.splice(targetIndex, 0, sourceCategory);
+        
+        // 保存更新后的顺序
+        localStorage.setItem('navLinks', JSON.stringify(links));
+        
+        // 重新渲染分类列表和书签区域
+        renderCategoryList();
+        renderBookmarks();
+    }
+    
+    return false;
+}
+
+// 处理分类列表拖拽结束事件
+function handleCategoryListDragEnd() {
+    // 移除拖拽中的视觉效果
+    this.classList.remove('dragging');
+    
+    // 移除所有分类列表项上的拖拽经过效果
+    document.querySelectorAll('.category-list-item').forEach(item => {
+        item.classList.remove('drag-over');
+    });
+    
+    // 重置拖拽状态
+    draggedCategoryListItem = null;
+}
+
+// 初始化分类拖拽功能
+function initCategoryDragSort() {
+    // 分类级别的拖拽功能已经在renderBookmarks中实现
+    
+    // 为分类管理设置事件监听
+    categoryForm.addEventListener('submit', handleAddCategory);
+    categoryEditForm.addEventListener('submit', handleEditCategory);
+    categoryCloseBtn.addEventListener('click', closeCategoryModal);
+    categoryEditCloseBtn.addEventListener('click', closeCategoryEditModal);
+    deleteCategoryBtn.addEventListener('click', handleDeleteCategory);
 }
 
 // 初始化页面

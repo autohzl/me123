@@ -67,7 +67,19 @@ const languages = {
         // 历史记录
         recentUrls: "最近添加",
         noRecentUrls: "暂无最近添加的网址",
-        clearHistory: "清除历史记录"
+        clearHistory: "清除历史记录",
+        
+        // 分类管理
+        manageCategories: "管理分类",
+        addCategory: "添加分类",
+        editCategory: "编辑分类",
+        categoryName: "分类名称:",
+        newCategoryName: "新分类名称",
+        confirmDeleteCategory: "确定要删除此分类吗？",
+        cannotDeleteNonEmptyCategory: "无法删除非空分类，请先移动或删除此分类中的所有链接",
+        categoryNameRequired: "分类名称不能为空",
+        categoryOrderSaved: "分类顺序已保存",
+        dragToReorder: "拖动分类改变显示顺序"
     },
     
     en: {
@@ -133,6 +145,18 @@ const languages = {
         // History
         recentUrls: "Recently Added",
         noRecentUrls: "No recent URLs",
-        clearHistory: "Clear History"
+        clearHistory: "Clear History",
+        
+        // Category Management
+        manageCategories: "Manage Categories",
+        addCategory: "Add Category",
+        editCategory: "Edit Category",
+        categoryName: "Category Name:",
+        newCategoryName: "New Category Name",
+        confirmDeleteCategory: "Are you sure you want to delete this category?",
+        cannotDeleteNonEmptyCategory: "Cannot delete a category that contains links. Please move or delete all links in this category first.",
+        categoryNameRequired: "Category name is required",
+        categoryOrderSaved: "Category order has been saved",
+        dragToReorder: "Drag categories to change display order"
     }
 }; 

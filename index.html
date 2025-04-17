@@ -174,10 +174,49 @@
         </div>
     </div>
     
+    <!-- 分类管理模态窗口 -->
+    <div id="category-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="category-close">&times;</span>
+            <h2 id="category-modal-title">管理分类</h2>
+            
+            <!-- 添加新分类表单 -->
+            <form id="category-form" class="category-form">
+                <input type="text" id="new-category-name" placeholder="输入新分类名称" required>
+                <button type="submit" id="add-category-btn">添加分类</button>
+            </form>
+            
+            <!-- 分类列表 -->
+            <div id="category-list">
+                <!-- 分类列表将通过JavaScript动态生成 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 分类编辑模态窗口 -->
+    <div id="category-edit-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="category-edit-close">&times;</span>
+            <h2 id="category-edit-title">编辑分类</h2>
+            <form id="category-edit-form">
+                <input type="hidden" id="category-key">
+                <div class="form-group">
+                    <label for="category-name">分类名称:</label>
+                    <input type="text" id="category-name" required>
+                </div>
+                <div class="button-group">
+                    <button type="submit" class="edit-btn">更新</button>
+                    <button type="button" class="delete-btn" id="delete-category-btn">删除</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <!-- 导入/导出操作的菜单 -->
     <div class="menu-container">
         <button id="menu-btn" class="menu-btn"><i class="fas fa-ellipsis-v"></i></button>
         <div class="dropdown-menu">
+            <button id="manage-categories-btn">管理分类</button>
             <button id="toggle-language-btn">切换语言 / Language</button>
             <button id="refresh-icons-btn">刷新所有图标</button>
             <button id="export-btn">导出链接</button>
