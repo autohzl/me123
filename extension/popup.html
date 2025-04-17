@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>网页书签助手</title>
+  <style>
+    body {
+      width: 350px;
+      font-family: 'Microsoft YaHei', Arial, sans-serif;
+      margin: 0;
+      padding: 15px;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    h1 {
+      font-size: 18px;
+      color: #1a73e8;
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+    .important-notice {
+      background-color: #fff8e1;
+      border-left: 4px solid #ffb300;
+      margin-bottom: 15px;
+      padding: 10px;
+      border-radius: 4px;
+      font-weight: bold;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .important-notice .highlight {
+      color: #d32f2f;
+    }
+    .important-notice .steps {
+      font-weight: normal;
+      margin-top: 8px;
+      padding-left: 20px;
+    }
+    .current-tab-info {
+      background-color: #e8f0fe;
+      border-radius: 6px;
+      padding: 10px;
+      margin-bottom: 15px;
+    }
+    #tab-info {
+      margin: 0;
+    }
+    #tab-info p {
+      margin: 5px 0;
+      font-size: 14px;
+      word-break: break-all;
+    }
+    #tabs-list {
+      max-height: 350px;
+      overflow-y: auto;
+      background-color: white;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .tab-item {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    .tab-item:last-child {
+      border-bottom: none;
+    }
+    .favicon {
+      width: 16px;
+      height: 16px;
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+    .tab-title {
+      flex-grow: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 14px;
+    }
+    .send-button {
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-size: 12px;
+      margin-left: 10px;
+    }
+    .send-button:hover {
+      background-color: #135cbc;
+    }
+    .status {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 14px;
+      display: none;
+    }
+    .loading {
+      background-color: #fffde7;
+      color: #856404;
+    }
+    .success {
+      background-color: #e8f5e9;
+      color: #155724;
+    }
+    .error {
+      background-color: #ffebee;
+      color: #721c24;
+    }
+    .error-details {
+      margin-top: 10px;
+      font-size: 13px;
+      border-radius: 4px;
+      padding: 10px;
+      background-color: #f8f9fa;
+      border-left: 3px solid #f44336;
+      line-height: 1.4;
+    }
+    .help-text {
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .tip {
+      color: #666;
+      font-size: 13px;
+      font-style: italic;
+      margin: 5px 10px;
+    }
+    .favicon-info {
+      background-color: #e0f7fa;
+      border-left: 4px solid #00acc1;
+      padding: 10px;
+      margin-top: 15px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <h1>网页书签助手</h1>
+  
+  <div class="important-notice">
+    <div>⚠️ <span class="highlight">请在导航页面打开此扩展</span></div>
+    <ol class="steps">
+      <li>打开您的个人导航页</li>
+      <li>确保导航页处于活动状态（当前标签）</li>
+      <li>选择并发送要添加的标签</li>
+    </ol>
+  </div>
+  
+  <div class="current-tab-info">
+    <h2>当前标签页</h2>
+    <div id="tab-info"></div>
+  </div>
+  
+  <h2>可用标签页</h2>
+  <div id="tabs-list"></div>
+  
+  <div id="status" class="status"></div>
+
+  <div class="favicon-info">
+    <strong>🔍 关于网站图标:</strong> 本扩展会自动获取并发送标签页的图标URL，并将其用于导航页面。
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html> 
