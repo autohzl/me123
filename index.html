@@ -24,7 +24,7 @@
         </header>
 
         <section class="section-title">
-            <h2>APPLICATIONS</h2>
+            <h2 id="applications-title">APPLICATIONS</h2>
         </section>
 
         <section class="applications" id="applications-container">
@@ -32,31 +32,31 @@
         </section>
 
         <section class="section-title">
-            <h2>BOOKMARKS</h2>
+            <h2 id="bookmarks-title">BOOKMARKS</h2>
         </section>
 
         <section class="bookmarks">
             <div class="category-container">
                 <div class="category">
-                    <h3>CLOUD</h3>
+                    <h3 id="cloud-title">CLOUD</h3>
                     <ul id="cloud-links">
                         <!-- 云存储链接会通过JavaScript动态加载 -->
                     </ul>
                 </div>
                 <div class="category">
-                    <h3>DESIGN</h3>
+                    <h3 id="design-title">DESIGN</h3>
                     <ul id="design-links">
                         <!-- 设计链接会通过JavaScript动态加载 -->
                     </ul>
                 </div>
                 <div class="category">
-                    <h3>GAMES</h3>
+                    <h3 id="games-title">GAMES</h3>
                     <ul id="games-links">
                         <!-- 游戏链接会通过JavaScript动态加载 -->
                     </ul>
                 </div>
                 <div class="category">
-                    <h3>MEDIA</h3>
+                    <h3 id="media-title">MEDIA</h3>
                     <ul id="media-links">
                         <!-- 媒体链接会通过JavaScript动态加载 -->
                     </ul>
@@ -64,25 +64,25 @@
             </div>
             <div class="category-container">
                 <div class="category">
-                    <h3>MUSIC</h3>
+                    <h3 id="music-title">MUSIC</h3>
                     <ul id="music-links">
                         <!-- 音乐链接会通过JavaScript动态加载 -->
                     </ul>
                 </div>
                 <div class="category">
-                    <h3>NEWS</h3>
+                    <h3 id="news-title">NEWS</h3>
                     <ul id="news-links">
                         <!-- 新闻链接会通过JavaScript动态加载 -->
                     </ul>
                 </div>
                 <div class="category">
-                    <h3>PROGRAMMING</h3>
+                    <h3 id="programming-title">PROGRAMMING</h3>
                     <ul id="programming-links">
                         <!-- 编程链接会通过JavaScript动态加载 -->
                     </ul>
                 </div>
                 <div class="category">
-                    <h3>PROJECTS</h3>
+                    <h3 id="projects-title">PROJECTS</h3>
                     <ul id="projects-links">
                         <!-- 项目链接会通过JavaScript动态加载 -->
                     </ul>
@@ -95,18 +95,21 @@
     <div id="add-link-modal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <h2>添加新网址</h2>
+            <h2 id="add-modal-title">添加新网址</h2>
             <form id="add-link-form">
                 <div class="form-group">
-                    <label for="link-url">网址:</label>
+                    <label for="link-url" id="url-label">网址:</label>
                     <input type="url" id="link-url" required placeholder="https://example.com">
                 </div>
                 <div class="form-group">
-                    <label for="link-name">名称:</label>
-                    <input type="text" id="link-name" placeholder="自动获取 (可选)">
+                    <label for="link-name" id="name-label">名称:</label>
+                    <div class="input-with-button">
+                        <input type="text" id="link-name" placeholder="网站名称 (可选)">
+                        <button type="button" id="fetch-name-btn" class="small-btn">自动获取</button>
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label for="link-category">分类:</label>
+                    <label for="link-category" id="category-label">分类:</label>
                     <select id="link-category" required>
                         <option value="applications">应用程序</option>
                         <option value="cloud">云存储</option>
@@ -119,7 +122,7 @@
                         <option value="projects">项目</option>
                     </select>
                 </div>
-                <button type="submit">添加</button>
+                <button type="submit" id="add-btn">添加</button>
             </form>
         </div>
     </div>
@@ -128,20 +131,23 @@
     <div id="edit-link-modal" class="modal">
         <div class="modal-content">
             <span class="close" id="edit-close">&times;</span>
-            <h2>编辑网址</h2>
+            <h2 id="edit-modal-title">编辑网址</h2>
             <form id="edit-link-form">
                 <input type="hidden" id="edit-link-index">
                 <input type="hidden" id="edit-link-category">
                 <div class="form-group">
-                    <label for="edit-link-url">网址:</label>
+                    <label for="edit-link-url" id="edit-url-label">网址:</label>
                     <input type="url" id="edit-link-url" required placeholder="https://example.com">
                 </div>
                 <div class="form-group">
-                    <label for="edit-link-name">名称:</label>
-                    <input type="text" id="edit-link-name" required placeholder="网址名称">
+                    <label for="edit-link-name" id="edit-name-label">名称:</label>
+                    <div class="input-with-button">
+                        <input type="text" id="edit-link-name" required placeholder="网址名称">
+                        <button type="button" id="edit-fetch-name-btn" class="small-btn">自动获取</button>
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label for="edit-link-new-category">移至分类:</label>
+                    <label for="edit-link-new-category" id="move-category-label">移至分类:</label>
                     <select id="edit-link-new-category">
                         <option value="applications">应用程序</option>
                         <option value="cloud">云存储</option>
@@ -155,7 +161,7 @@
                     </select>
                 </div>
                 <div class="button-group">
-                    <button type="submit" class="edit-btn">更新</button>
+                    <button type="submit" class="edit-btn" id="update-btn">更新</button>
                     <button type="button" class="delete-btn" id="delete-link-btn">删除</button>
                 </div>
             </form>
@@ -166,9 +172,11 @@
     <div class="menu-container">
         <button id="menu-btn" class="menu-btn"><i class="fas fa-ellipsis-v"></i></button>
         <div class="dropdown-menu">
+            <button id="toggle-language-btn">切换语言 / Language</button>
+            <button id="refresh-icons-btn">刷新所有图标</button>
             <button id="export-btn">导出链接</button>
             <div class="file-input-container">
-                <label for="import-file">导入链接</label>
+                <label for="import-file" id="import-label">导入链接</label>
                 <input type="file" id="import-file" accept=".json">
             </div>
         </div>
@@ -176,6 +184,7 @@
 
     <button id="add-link-btn" class="floating-btn">+</button>
 
+    <script src="languages.js"></script>
     <script src="script.js"></script>
 </body>
 </html> 

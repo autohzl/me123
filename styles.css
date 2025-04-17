@@ -99,10 +99,17 @@ header {
     align-items: center;
     justify-content: center;
     font-size: 1.2rem;
+    overflow: hidden;
 }
 
 .application-icon i {
     color: #89cff0;
+}
+
+.application-icon .favicon-img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
 }
 
 .application-info {
@@ -165,6 +172,13 @@ header {
 .category i {
     min-width: 24px;
     text-align: center;
+}
+
+.category a .favicon-img {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    min-width: 16px;
 }
 
 /* 模态窗口样式 */
@@ -417,4 +431,31 @@ button[type="submit"]:hover {
         width: 50px;
         height: 50px;
     }
+}
+
+/* 带按钮的输入框样式 */
+.input-with-button {
+    display: flex;
+    gap: 8px;
+}
+
+.input-with-button input {
+    flex: 1;
+}
+
+.small-btn {
+    background-color: #2e3138;
+    border: 1px solid #35383f;
+    color: #8bc34a;
+    padding: 0.5rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.small-btn:hover {
+    background-color: #35383f;
+    color: #a0d468;
 } 
