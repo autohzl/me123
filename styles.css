@@ -1,0 +1,420 @@
+/* 全局样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #1e2126;
+    color: #ffffff;
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* 顶部区域样式 */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    color: #ddd;
+}
+
+.date-info {
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.greeting {
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: #ddd;
+}
+
+.weather {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.weather-icon {
+    font-size: 1.5rem;
+    color: #8bc34a;
+}
+
+.weather-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+/* 分类标题样式 */
+.section-title {
+    border-bottom: 1px solid #35383f;
+    margin: 2rem 0 1rem 0;
+}
+
+.section-title h2 {
+    font-size: 1.2rem;
+    font-weight: 400;
+    margin-bottom: 0.5rem;
+    color: #ddd;
+}
+
+/* 应用程序区域样式 */
+.applications {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.application-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem;
+    transition: background-color 0.2s;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.application-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.application-icon {
+    width: 40px;
+    height: 40px;
+    background-color: #2e3138;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.application-icon i {
+    color: #89cff0;
+}
+
+.application-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.application-name {
+    font-weight: 600;
+    color: #ddd;
+}
+
+.application-url {
+    font-size: 0.8rem;
+    color: #8bc34a;
+}
+
+/* 书签区域样式 */
+.bookmarks {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.category-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.category h3 {
+    font-size: 1rem;
+    color: #8bc34a;
+    margin-bottom: 0.8rem;
+    font-weight: 400;
+}
+
+.category ul {
+    list-style: none;
+}
+
+.category li {
+    margin-bottom: 0.5rem;
+}
+
+.category a {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #ddd;
+    text-decoration: none;
+    padding: 0.3rem 0;
+    transition: color 0.2s;
+}
+
+.category a:hover {
+    color: #8bc34a;
+}
+
+.category i {
+    min-width: 24px;
+    text-align: center;
+}
+
+/* 模态窗口样式 */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 100;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.modal-content {
+    background-color: #2e3138;
+    margin: 10% auto;
+    padding: 2rem;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 500px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #fff;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #ddd;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.8rem;
+    background-color: #1e2126;
+    border: 1px solid #35383f;
+    border-radius: 4px;
+    color: #ddd;
+}
+
+button[type="submit"] {
+    width: 100%;
+    padding: 0.8rem;
+    background-color: #8bc34a;
+    color: #000;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+button[type="submit"]:hover {
+    background-color: #a0d468;
+}
+
+/* 编辑和删除按钮样式 */
+.button-group {
+    display: flex;
+    gap: 1rem;
+}
+
+.button-group button {
+    flex: 1;
+    padding: 0.8rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+.edit-btn {
+    background-color: #8bc34a;
+    color: #000;
+}
+
+.edit-btn:hover {
+    background-color: #a0d468;
+}
+
+.delete-btn {
+    background-color: #f44336;
+    color: #fff;
+}
+
+.delete-btn:hover {
+    background-color: #ff5252;
+}
+
+/* 悬浮添加按钮 */
+.floating-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #8bc34a;
+    color: #000;
+    font-size: 2rem;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+.floating-btn:hover {
+    transform: scale(1.1);
+    background-color: #a0d468;
+}
+
+/* 菜单样式 */
+.menu-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 90;
+}
+
+.menu-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #2e3138;
+    color: #ddd;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 50px;
+    background-color: #2e3138;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    min-width: 160px;
+}
+
+.dropdown-menu.active {
+    display: block;
+}
+
+.dropdown-menu button,
+.dropdown-menu label {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    text-align: left;
+    background: none;
+    border: none;
+    color: #ddd;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.dropdown-menu button:hover,
+.dropdown-menu label:hover {
+    background-color: #1e2126;
+}
+
+.file-input-container {
+    position: relative;
+}
+
+.file-input-container input[type="file"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* 上下文菜单 */
+.context-menu {
+    display: none;
+    position: absolute;
+    background-color: #2e3138;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+}
+
+.context-menu button {
+    display: block;
+    width: 100%;
+    padding: 8px 16px;
+    text-align: left;
+    background: none;
+    border: none;
+    color: #ddd;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.context-menu button:hover {
+    background-color: #1e2126;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    body {
+        padding: 1rem;
+    }
+    
+    .greeting {
+        font-size: 2rem;
+    }
+    
+    .category-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .menu-container {
+        top: 10px;
+        right: 10px;
+    }
+    
+    .floating-btn {
+        bottom: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+    }
+} 

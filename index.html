@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人导航页面</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="date-info" id="date-display"></div>
+            <div class="greeting" id="greeting">Good afternoon!</div>
+            <div class="weather">
+                <div class="weather-icon">
+                    <i class="fas fa-cloud-sun"></i>
+                </div>
+                <div class="weather-info">
+                    <span id="temperature">8°C</span>
+                    <span id="humidity">75%</span>
+                </div>
+            </div>
+        </header>
+
+        <section class="section-title">
+            <h2>APPLICATIONS</h2>
+        </section>
+
+        <section class="applications" id="applications-container">
+            <!-- 应用程序会通过JavaScript动态加载 -->
+        </section>
+
+        <section class="section-title">
+            <h2>BOOKMARKS</h2>
+        </section>
+
+        <section class="bookmarks">
+            <div class="category-container">
+                <div class="category">
+                    <h3>CLOUD</h3>
+                    <ul id="cloud-links">
+                        <!-- 云存储链接会通过JavaScript动态加载 -->
+                    </ul>
+                </div>
+                <div class="category">
+                    <h3>DESIGN</h3>
+                    <ul id="design-links">
+                        <!-- 设计链接会通过JavaScript动态加载 -->
+                    </ul>
+                </div>
+                <div class="category">
+                    <h3>GAMES</h3>
+                    <ul id="games-links">
+                        <!-- 游戏链接会通过JavaScript动态加载 -->
+                    </ul>
+                </div>
+                <div class="category">
+                    <h3>MEDIA</h3>
+                    <ul id="media-links">
+                        <!-- 媒体链接会通过JavaScript动态加载 -->
+                    </ul>
+                </div>
+            </div>
+            <div class="category-container">
+                <div class="category">
+                    <h3>MUSIC</h3>
+                    <ul id="music-links">
+                        <!-- 音乐链接会通过JavaScript动态加载 -->
+                    </ul>
+                </div>
+                <div class="category">
+                    <h3>NEWS</h3>
+                    <ul id="news-links">
+                        <!-- 新闻链接会通过JavaScript动态加载 -->
+                    </ul>
+                </div>
+                <div class="category">
+                    <h3>PROGRAMMING</h3>
+                    <ul id="programming-links">
+                        <!-- 编程链接会通过JavaScript动态加载 -->
+                    </ul>
+                </div>
+                <div class="category">
+                    <h3>PROJECTS</h3>
+                    <ul id="projects-links">
+                        <!-- 项目链接会通过JavaScript动态加载 -->
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 添加网址的模态窗口 -->
+    <div id="add-link-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>添加新网址</h2>
+            <form id="add-link-form">
+                <div class="form-group">
+                    <label for="link-url">网址:</label>
+                    <input type="url" id="link-url" required placeholder="https://example.com">
+                </div>
+                <div class="form-group">
+                    <label for="link-name">名称:</label>
+                    <input type="text" id="link-name" placeholder="自动获取 (可选)">
+                </div>
+                <div class="form-group">
+                    <label for="link-category">分类:</label>
+                    <select id="link-category" required>
+                        <option value="applications">应用程序</option>
+                        <option value="cloud">云存储</option>
+                        <option value="design">设计</option>
+                        <option value="games">游戏</option>
+                        <option value="media">媒体</option>
+                        <option value="music">音乐</option>
+                        <option value="news">新闻</option>
+                        <option value="programming">编程</option>
+                        <option value="projects">项目</option>
+                    </select>
+                </div>
+                <button type="submit">添加</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 编辑网址的模态窗口 -->
+    <div id="edit-link-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="edit-close">&times;</span>
+            <h2>编辑网址</h2>
+            <form id="edit-link-form">
+                <input type="hidden" id="edit-link-index">
+                <input type="hidden" id="edit-link-category">
+                <div class="form-group">
+                    <label for="edit-link-url">网址:</label>
+                    <input type="url" id="edit-link-url" required placeholder="https://example.com">
+                </div>
+                <div class="form-group">
+                    <label for="edit-link-name">名称:</label>
+                    <input type="text" id="edit-link-name" required placeholder="网址名称">
+                </div>
+                <div class="form-group">
+                    <label for="edit-link-new-category">移至分类:</label>
+                    <select id="edit-link-new-category">
+                        <option value="applications">应用程序</option>
+                        <option value="cloud">云存储</option>
+                        <option value="design">设计</option>
+                        <option value="games">游戏</option>
+                        <option value="media">媒体</option>
+                        <option value="music">音乐</option>
+                        <option value="news">新闻</option>
+                        <option value="programming">编程</option>
+                        <option value="projects">项目</option>
+                    </select>
+                </div>
+                <div class="button-group">
+                    <button type="submit" class="edit-btn">更新</button>
+                    <button type="button" class="delete-btn" id="delete-link-btn">删除</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 导入/导出操作的菜单 -->
+    <div class="menu-container">
+        <button id="menu-btn" class="menu-btn"><i class="fas fa-ellipsis-v"></i></button>
+        <div class="dropdown-menu">
+            <button id="export-btn">导出链接</button>
+            <div class="file-input-container">
+                <label for="import-file">导入链接</label>
+                <input type="file" id="import-file" accept=".json">
+            </div>
+        </div>
+    </div>
+
+    <button id="add-link-btn" class="floating-btn">+</button>
+
+    <script src="script.js"></script>
+</body>
+</html> 
