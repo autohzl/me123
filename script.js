@@ -109,6 +109,16 @@ function getText(key) {
     return languages[currentLang][key] || key;
 }
 
+// 保存最后选择的分类到localStorage
+function saveLastSelectedCategory(category) {
+    localStorage.setItem('lastSelectedCategory', category);
+}
+
+// 获取最后选择的分类
+function getLastSelectedCategory() {
+    return localStorage.getItem('lastSelectedCategory') || 'applications'; // 默认返回 'applications'
+}
+
 // 初始化页面
 function initPage() {
     // 应用语言设置
@@ -555,7 +565,17 @@ function updateCategorySelectOptions() {
 // 打开模态窗口
 function openModal() {
     modal.style.display = 'block';
-    document.getElementById('link-url').focus();
+    
+    // 设置上次选择的分类
+    const lastCategory = getLastSelectedCategory();
+    const categorySelect = document.getElementById('link-category');
+    if (categorySelect.querySelector(`option[value="${lastCategory}"]`)) {
+        categorySelect.value = lastCategory;
+    }
+    
+    // 重置表单
+    document.getElementById('link-url').value = '';
+    document.getElementById('link-name').value = '';
 }
 
 // 关闭模态窗口
@@ -590,6 +610,9 @@ async function handleAddLink(e) {
     const url = document.getElementById('link-url').value;
     let name = document.getElementById('link-name').value;
     const category = document.getElementById('link-category').value;
+    
+    // 保存选择的分类
+    saveLastSelectedCategory(category);
     
     // 如果未提供名称，尝试从URL获取
     if (!name) {
@@ -750,6 +773,9 @@ function handleEditLink(e) {
     const index = parseInt(document.getElementById('edit-link-index').value);
     const oldCategory = document.getElementById('edit-link-category').value;
     const newCategory = document.getElementById('edit-link-new-category').value;
+    
+    // 保存选择的分类
+    saveLastSelectedCategory(newCategory);
     
     const url = document.getElementById('edit-link-url').value;
     const name = document.getElementById('edit-link-name').value;
