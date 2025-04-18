@@ -541,6 +541,8 @@ function applyLanguage() {
     // 更新分类编辑模态窗口
     document.getElementById('category-edit-title').textContent = getText('editCategory');
     document.getElementById('delete-category-btn').textContent = getText('deleteCategory');
+    document.querySelector('#category-edit-form label[for="category-name"]').textContent = getText('categoryName');
+    document.querySelector('#category-edit-form button[type="submit"]').textContent = getText('update');
     
     // 更新用户名设置模态窗口
     document.getElementById('username-title').textContent = getText('setUsername');
@@ -2384,6 +2386,12 @@ function openCategoryEditModal(category) {
     // 设置当前分类信息
     categoryNameInput.value = getText(category);
     categoryKeyInput.value = category;
+    
+    // 更新模态窗口中的文本
+    document.getElementById('category-edit-title').textContent = getText('editCategory');
+    document.querySelector('#category-edit-form label[for="category-name"]').textContent = getText('categoryName');
+    document.querySelector('#category-edit-form button[type="submit"]').textContent = getText('update');
+    document.getElementById('delete-category-btn').textContent = getText('deleteCategory');
     
     // 显示模态窗口
     categoryEditModal.style.display = 'block';
