@@ -142,6 +142,11 @@ header {
     color: #8bc34a;
     margin-bottom: 0.8rem;
     font-weight: 400;
+    overflow: visible;
+    white-space: normal;
+    word-break: break-word;
+    max-width: 100%;
+    line-height: 1.4;
 }
 
 .category ul {
@@ -561,8 +566,9 @@ button[type="submit"]:hover {
 .category-title-container {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 0.8rem;
+    flex-wrap: wrap;
 }
 
 .category-tip {
@@ -635,6 +641,10 @@ button[type="submit"]:hover {
     flex: 1;
     font-weight: 500;
     margin: 0 0.8rem;
+    overflow: visible;
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.4;
 }
 
 .category-list-count {
@@ -705,4 +715,66 @@ button[type="submit"]:hover {
 .category.drag-over {
     border: 2px dashed #8bc34a;
     background-color: rgba(139, 195, 74, 0.2);
+}
+
+/* 扩展模态窗口样式 */
+.extension-modal {
+    z-index: 110;
+}
+
+.extension-modal .modal-content {
+    background-color: #2e3545;
+    border: 2px solid #8bc34a;
+    max-width: 450px;
+    margin: 5% auto;
+    animation: slide-in 0.3s ease;
+}
+
+.extension-modal:nth-of-type(2n) .modal-content {
+    margin-left: calc(50% - 230px + 50px);
+}
+
+.extension-modal:nth-of-type(3n) .modal-content {
+    margin-left: calc(50% - 230px - 50px);
+}
+
+.extension-modal:nth-of-type(4n) .modal-content {
+    margin-top: calc(5% + 30px);
+}
+
+.extension-modal h2 {
+    color: #8bc34a;
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+
+@keyframes slide-in {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.temp-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* 在扩展模态窗口中确保分类名称显示完整 */
+.extension-modal select {
+    width: 100%;
+    max-width: 100%;
+    text-overflow: ellipsis;
+}
+
+.extension-modal select option {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
 } 

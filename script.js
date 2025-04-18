@@ -106,7 +106,133 @@ let pageTitle = localStorage.getItem('pageTitle') || '';
 
 // 获取当前语言的文本
 function getText(key) {
+    // 如果是以cat_开头的键，需要特殊处理
+    if (key && key.startsWith('cat_')) {
+        // 首先检查当前语言中是否有此键的文本
+        if (languages[currentLang][key]) {
+            return languages[currentLang][key];
+        }
+        
+        // 如果没有找到，尝试在所有语言中查找
+        for (const lang in languages) {
+            if (languages[lang][key]) {
+                return languages[lang][key];
+            }
+        }
+        
+        // 尝试从本地存储的categoryNames中获取
+        try {
+            const categoryNames = JSON.parse(localStorage.getItem('categoryNames') || '{}');
+            if (categoryNames[key]) {
+                // 同时更新languages对象
+                languages.zh[key] = categoryNames[key];
+                languages.en[key] = categoryNames[key];
+                return categoryNames[key];
+            }
+        } catch (e) {
+            console.error("从categoryNames获取分类名称时出错:", e);
+        }
+        
+        // 如果仍然没有找到，返回键名但去掉前缀
+        return key.replace('cat_', '分类_');
+    }
+    
+    // 正常情况下返回当前语言的文本，或者键名本身
     return languages[currentLang][key] || key;
+}
+
+// 修复分类名称显示问题
+function initLanguageData() {
+    console.log("初始化分类名称数据...");
+    
+    // 首先尝试从本地存储加载分类名称映射
+    let categoryNames = {};
+    try {
+        categoryNames = JSON.parse(localStorage.getItem('categoryNames') || '{}');
+        console.log("从本地存储加载的分类名称:", categoryNames);
+    } catch (e) {
+        console.error("加载分类名称时出错:", e);
+        categoryNames = {};
+    }
+    
+    // 遍历所有分类
+    for (const category in links) {
+        // 跳过非分类键
+        if (category === 'categoryOrder' || typeof links[category] !== 'object') {
+            continue;
+        }
+        
+        console.log(`处理分类: ${category}`);
+        
+        // 如果是以cat_开头的分类键
+        if (category.startsWith('cat_')) {
+            // 如果在映射中找到了名称
+            if (categoryNames[category]) {
+                console.log(`找到分类 ${category} 的名称: ${categoryNames[category]}`);
+                languages.zh[category] = categoryNames[category];
+                languages.en[category] = categoryNames[category];
+            } 
+            // 如果在语言数据中没有对应的名称
+            else if (!languages.zh[category] && !languages.en[category]) {
+                // 创建一个临时名称
+                const defaultName = '分类_' + category.substring(4);
+                console.log(`为分类 ${category} 创建临时名称: ${defaultName}`);
+                languages.zh[category] = defaultName;
+                languages.en[category] = defaultName;
+            }
+        }
+        // 对于非cat_开头的常规分类键（如cloud, design等）
+        else {
+            // 如果在语言数据中没有名称，使用key本身作为名称
+            if (!languages.zh[category]) {
+                languages.zh[category] = category.charAt(0).toUpperCase() + category.slice(1);
+            }
+            if (!languages.en[category]) {
+                languages.en[category] = category.charAt(0).toUpperCase() + category.slice(1);
+            }
+            
+            // 同时保存到categoryNames中
+            categoryNames[category] = languages.zh[category];
+        }
+    }
+    
+    // 更新并保存分类名称映射
+    localStorage.setItem('categoryNames', JSON.stringify(categoryNames));
+    console.log("保存的分类名称映射:", categoryNames);
+}
+
+// 保存分类名称映射到本地存储
+function saveCategoryNames() {
+    let categoryNames = {};
+    
+    // 尝试从本地存储加载现有映射
+    try {
+        categoryNames = JSON.parse(localStorage.getItem('categoryNames') || '{}');
+    } catch (e) {
+        console.error("加载现有分类名称映射时出错:", e);
+        categoryNames = {};
+    }
+    
+    // 遍历所有分类
+    for (const category in links) {
+        // 跳过非分类键
+        if (category === 'categoryOrder' || typeof links[category] !== 'object') {
+            continue;
+        }
+        
+        // 保存分类名称（优先使用当前语言的名称）
+        if (languages[currentLang][category]) {
+            categoryNames[category] = languages[currentLang][category];
+        } else if (languages.zh[category]) {
+            categoryNames[category] = languages.zh[category];
+        } else if (languages.en[category]) {
+            categoryNames[category] = languages.en[category];
+        }
+    }
+    
+    // 保存到本地存储
+    localStorage.setItem('categoryNames', JSON.stringify(categoryNames));
+    console.log("更新的分类名称映射:", categoryNames);
 }
 
 // 保存最后选择的分类到localStorage
@@ -121,6 +247,9 @@ function getLastSelectedCategory() {
 
 // 初始化页面
 function initPage() {
+    // 初始化分类名称数据
+    initLanguageData();
+    
     // 应用语言设置
     applyLanguage();
     
@@ -978,11 +1107,30 @@ function toggleMenu() {
 
 // 导出链接数据为JSON文件
 function exportLinks() {
-    const dataStr = JSON.stringify(links, null, 2);
+    console.log("开始导出数据...");
+    
+    // 准备导出数据，包括links和categoryNames
+    const exportData = {
+        links: links,
+        categoryNames: {}
+    };
+    
+    // 加载分类名称映射
+    try {
+        const categoryNames = JSON.parse(localStorage.getItem('categoryNames') || '{}');
+        exportData.categoryNames = categoryNames;
+        console.log("导出包含分类名称映射:", categoryNames);
+    } catch (e) {
+        console.error("导出时加载分类名称出错:", e);
+    }
+    
+    // 转换为JSON字符串
+    const dataStr = JSON.stringify(exportData, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
     
     const exportFileDefaultName = 'nav-links.json';
     
+    // 创建下载链接
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', exportFileDefaultName);
@@ -990,23 +1138,79 @@ function exportLinks() {
     
     // 关闭菜单
     dropdownMenu.classList.remove('active');
+    
+    console.log("数据导出完成");
 }
 
 // 处理导入文件
 function handleImportFile(e) {
+    console.log("开始导入数据...");
     const file = e.target.files[0];
     if (!file) return;
     
     const reader = new FileReader();
     reader.onload = (event) => {
         try {
-            const importedLinks = JSON.parse(event.target.result);
-            links = importedLinks;
+            // 解析导入的JSON数据
+            const importedData = JSON.parse(event.target.result);
+            
+            // 检查是否是新格式（包含categoryNames）
+            if (importedData.links && importedData.categoryNames) {
+                console.log("导入新格式数据，包含分类名称映射");
+                links = importedData.links;
+                
+                // 保存分类名称映射
+                localStorage.setItem('categoryNames', JSON.stringify(importedData.categoryNames));
+                
+                // 更新languages对象，以便正确显示分类名称
+                for (const category in importedData.categoryNames) {
+                    const name = importedData.categoryNames[category];
+                    languages.zh[category] = name;
+                    languages.en[category] = name;
+                    console.log(`导入分类名称: ${category} -> ${name}`);
+                }
+            } 
+            // 兼容旧格式（直接是links对象）
+            else {
+                console.log("导入旧格式数据，无分类名称映射");
+                links = importedData;
+                
+                // 尝试为cat_开头的分类创建默认名称
+                const categoryNames = {};
+                for (const category in links) {
+                    if (category === 'categoryOrder' || typeof links[category] !== 'object') {
+                        continue;
+                    }
+                    
+                    if (category.startsWith('cat_')) {
+                        const defaultName = '分类_' + category.substring(4);
+                        categoryNames[category] = defaultName;
+                        languages.zh[category] = defaultName;
+                        languages.en[category] = defaultName;
+                        console.log(`为导入的分类创建默认名称: ${category} -> ${defaultName}`);
+                    }
+                }
+                
+                // 保存新创建的分类名称映射
+                if (Object.keys(categoryNames).length > 0) {
+                    localStorage.setItem('categoryNames', JSON.stringify(categoryNames));
+                }
+            }
+            
+            // 保存到本地存储
             localStorage.setItem('navLinks', JSON.stringify(links));
+            
+            // 重新初始化分类名称数据
+            initLanguageData();
+            
+            // 重新渲染
             renderApplications();
             renderBookmarks();
+            
             alert(getText('importSuccess'));
+            console.log("数据导入成功");
         } catch (error) {
+            console.error("导入失败:", error);
             alert(getText('importFailed'));
         }
     };
@@ -1780,9 +1984,23 @@ function initCategoryDragSort() {
 
 // 添加新分类
 function addNewCategory(name, key) {
+    console.log(`添加新分类: ${name}`);
+    
     // 如果没有提供key，从name生成
     if (!key) {
-        key = name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+        // 修改key生成逻辑，支持中文和其他非ASCII字符
+        // 使用唯一前缀+名称的MD5散列值截取生成key
+        const prefix = 'cat_';
+        
+        // 如果名称是纯英文和数字，则保持原来的处理方式
+        if (/^[a-zA-Z0-9\s_]+$/.test(name)) {
+            key = name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+        } else {
+            // 对于中文或其他非ASCII字符，使用字符串的hashCode
+            key = prefix + generateSimpleHash(name);
+        }
+        
+        console.log(`为 "${name}" 生成的key: ${key}`);
     }
     
     // 确保key是唯一的
@@ -1794,6 +2012,7 @@ function addNewCategory(name, key) {
             newKey = `${key}_${counter}`;
         }
         key = newKey;
+        console.log(`调整key以确保唯一: ${key}`);
     }
     
     // 添加到languages，以便getText可以使用
@@ -1809,8 +2028,13 @@ function addNewCategory(name, key) {
     }
     links.categoryOrder.push(key);
     
+    // 保存分类名称映射
+    saveCategoryNames();
+    
     // 保存到本地存储
     localStorage.setItem('navLinks', JSON.stringify(links));
+    
+    console.log(`分类 "${name}" (${key}) 添加完成`);
     
     // 重新渲染书签区域
     renderBookmarks();
@@ -1818,11 +2042,36 @@ function addNewCategory(name, key) {
     return key;
 }
 
+// 生成简单的字符串哈希值，用于中文等非ASCII字符的分类key
+function generateSimpleHash(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        // 使用字符的Unicode码点
+        hash = ((hash << 5) - hash) + str.charCodeAt(i);
+        hash = hash & hash; // 转换为32位整数
+    }
+    // 返回正整数的字符串表示
+    return Math.abs(hash).toString(36).substring(0, 8);
+}
+
 // 重命名分类
 function renameCategory(oldKey, newName, newKey) {
+    console.log(`重命名分类: ${oldKey} -> ${newName}`);
+    
     // 如果没有提供新key，从新名称生成
     if (!newKey) {
-        newKey = newName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+        // 修改key生成逻辑，支持中文和其他非ASCII字符
+        const prefix = 'cat_';
+        
+        // 如果名称是纯英文和数字，则保持原来的处理方式
+        if (/^[a-zA-Z0-9\s_]+$/.test(newName)) {
+            newKey = newName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+        } else {
+            // 对于中文或其他非ASCII字符，使用字符串的hashCode
+            newKey = prefix + generateSimpleHash(newName);
+        }
+        
+        console.log(`为 "${newName}" 生成的key: ${newKey}`);
     }
     
     // 确保新key是唯一的，如果和旧key不同
@@ -1834,6 +2083,7 @@ function renameCategory(oldKey, newName, newKey) {
             tempKey = `${newKey}_${counter}`;
         }
         newKey = tempKey;
+        console.log(`调整key以确保唯一: ${newKey}`);
     }
     
     // 更新languages
@@ -1845,15 +2095,35 @@ function renameCategory(oldKey, newName, newKey) {
         links[newKey] = links[oldKey];
         delete links[oldKey];
         
+        // 删除旧的language条目
+        delete languages.zh[oldKey];
+        delete languages.en[oldKey];
+        
         // 在分类顺序数组中更新key
         const index = links.categoryOrder.indexOf(oldKey);
         if (index !== -1) {
             links.categoryOrder[index] = newKey;
         }
         
-        // 更新本地存储
-        localStorage.setItem('navLinks', JSON.stringify(links));
+        // 从categoryNames中移除旧key
+        try {
+            const categoryNames = JSON.parse(localStorage.getItem('categoryNames') || '{}');
+            if (categoryNames[oldKey]) {
+                delete categoryNames[oldKey];
+                localStorage.setItem('categoryNames', JSON.stringify(categoryNames));
+            }
+        } catch (e) {
+            console.error("更新categoryNames时出错:", e);
+        }
     }
+    
+    // 保存分类名称映射
+    saveCategoryNames();
+    
+    // 更新本地存储
+    localStorage.setItem('navLinks', JSON.stringify(links));
+    
+    console.log(`分类重命名完成: ${oldKey} -> ${newKey} (${newName})`);
     
     // 重新渲染书签区域
     renderBookmarks();
@@ -2000,6 +2270,223 @@ function handleUsernameSubmit(e) {
     // 关闭模态窗口
     closeUsernameModal();
 }
+
+// 存储扩展发送的信息队列
+const extensionDataQueue = [];
+
+// 处理扩展发送的数据，创建新的模态窗口而不是只用一个
+function processExtensionData(tabInfo) {
+    console.log('处理扩展发送的数据:', tabInfo);
+    
+    // 创建临时模态窗口
+    const tempModalId = 'temp-modal-' + Date.now();
+    const tempModal = createTempModal(tempModalId, tabInfo);
+    document.body.appendChild(tempModal);
+    
+    // 显示模态窗口
+    tempModal.style.display = 'block';
+    
+    // 添加到队列中
+    extensionDataQueue.push({
+        id: tempModalId,
+        tabInfo: tabInfo,
+        modal: tempModal
+    });
+    
+    return tempModalId;
+}
+
+// 创建临时模态窗口
+function createTempModal(modalId, tabInfo) {
+    // 创建模态窗口容器
+    const modal = document.createElement('div');
+    modal.id = modalId;
+    modal.className = 'modal extension-modal';
+    
+    // 创建模态窗口内容
+    const modalContent = document.createElement('div');
+    modalContent.className = 'modal-content';
+    
+    // 添加关闭按钮
+    const closeBtn = document.createElement('span');
+    closeBtn.className = 'close';
+    closeBtn.innerHTML = '&times;';
+    closeBtn.addEventListener('click', function() {
+        modal.style.display = 'none';
+        // 从队列中移除
+        const index = extensionDataQueue.findIndex(item => item.id === modalId);
+        if (index !== -1) {
+            extensionDataQueue.splice(index, 1);
+        }
+        // 从DOM中移除
+        setTimeout(() => {
+            if (modal.parentNode) {
+                modal.parentNode.removeChild(modal);
+            }
+        }, 500);
+    });
+    
+    // 添加标题
+    const title = document.createElement('h2');
+    title.textContent = '添加来自扩展的链接';
+    
+    // 创建表单
+    const form = document.createElement('form');
+    form.className = 'temp-form';
+    
+    // URL输入字段
+    const urlGroup = document.createElement('div');
+    urlGroup.className = 'form-group';
+    
+    const urlLabel = document.createElement('label');
+    urlLabel.textContent = '网址:';
+    
+    const urlInput = document.createElement('input');
+    urlInput.type = 'url';
+    urlInput.value = tabInfo.url || '';
+    urlInput.required = true;
+    
+    urlGroup.appendChild(urlLabel);
+    urlGroup.appendChild(urlInput);
+    
+    // 名称输入字段
+    const nameGroup = document.createElement('div');
+    nameGroup.className = 'form-group';
+    
+    const nameLabel = document.createElement('label');
+    nameLabel.textContent = '名称:';
+    
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.value = tabInfo.title || '';
+    
+    nameGroup.appendChild(nameLabel);
+    nameGroup.appendChild(nameInput);
+    
+    // 分类选择字段
+    const categoryGroup = document.createElement('div');
+    categoryGroup.className = 'form-group';
+    
+    const categoryLabel = document.createElement('label');
+    categoryLabel.textContent = '分类:';
+    
+    const categorySelect = document.createElement('select');
+    categorySelect.required = true;
+    
+    // 添加分类选项
+    const categories = Object.keys(links).filter(key => key !== 'categoryOrder');
+    
+    // 设置默认分类为上次选择的分类
+    const lastCategory = getLastSelectedCategory();
+    
+    categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = getText(category);
+        if (category === lastCategory) {
+            option.selected = true;
+        }
+        categorySelect.appendChild(option);
+    });
+    
+    categoryGroup.appendChild(categoryLabel);
+    categoryGroup.appendChild(categorySelect);
+    
+    // 添加按钮
+    const submitBtn = document.createElement('button');
+    submitBtn.type = 'submit';
+    submitBtn.textContent = '添加';
+    
+    // 处理表单提交
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // 获取表单数据
+        const url = urlInput.value;
+        const name = nameInput.value;
+        const category = categorySelect.value;
+        
+        // 保存最后选择的分类
+        saveLastSelectedCategory(category);
+        
+        // 获取网站图标URL
+        const faviconUrl = tabInfo.favIconUrl || getFaviconUrl(url);
+        
+        // 创建新链接对象
+        const newLink = { 
+            name, 
+            url, 
+            icon: 'fa-globe', // 默认图标作为后备
+            faviconUrl: faviconUrl
+        };
+        
+        // 添加新链接
+        if (!links[category]) {
+            links[category] = [];
+        }
+        
+        links[category].push(newLink);
+        
+        // 保存到本地存储
+        localStorage.setItem('navLinks', JSON.stringify(links));
+        
+        // 添加到最近URL历史记录
+        addToRecentUrls(url, name);
+        
+        // 重新渲染
+        if (category === 'applications') {
+            renderApplications();
+        } else {
+            renderBookmarks();
+        }
+        
+        // 关闭模态窗口
+        modal.style.display = 'none';
+        
+        // 从队列中移除
+        const index = extensionDataQueue.findIndex(item => item.id === modalId);
+        if (index !== -1) {
+            extensionDataQueue.splice(index, 1);
+        }
+        
+        // 从DOM中移除
+        setTimeout(() => {
+            if (modal.parentNode) {
+                modal.parentNode.removeChild(modal);
+            }
+        }, 500);
+    });
+    
+    // 组装表单
+    form.appendChild(urlGroup);
+    form.appendChild(nameGroup);
+    form.appendChild(categoryGroup);
+    form.appendChild(submitBtn);
+    
+    // 组装模态窗口
+    modalContent.appendChild(closeBtn);
+    modalContent.appendChild(title);
+    modalContent.appendChild(form);
+    modal.appendChild(modalContent);
+    
+    return modal;
+}
+
+// 向页面添加接收扩展消息的功能
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('添加扩展消息接收功能');
+    
+    // 添加特定的事件监听器以接收扩展发送的数据
+    document.addEventListener('tabDataReceived', function(e) {
+        console.log('接收到tabDataReceived事件', e.detail);
+        processExtensionData(e.detail);
+    });
+    
+    // 为window添加接收方法，方便扩展调用
+    window.receiveTabInfo = function(tabInfo) {
+        return processExtensionData(tabInfo);
+    };
+});
 
 // 初始化页面
 document.addEventListener('DOMContentLoaded', initPage); 
