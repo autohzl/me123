@@ -573,9 +573,18 @@ function openModal() {
         categorySelect.value = lastCategory;
     }
     
-    // 重置表单
-    document.getElementById('link-url').value = '';
-    document.getElementById('link-name').value = '';
+    // 只有在字段为空时才设置默认值，避免清空扩展填充的值
+    const urlInput = document.getElementById('link-url');
+    const nameInput = document.getElementById('link-name');
+    
+    // 如果没有值（表单是用户手动打开的），才清空这些字段
+    if (!urlInput.value.trim()) {
+        urlInput.value = '';
+    }
+    
+    if (!nameInput.value.trim()) {
+        nameInput.value = '';
+    }
 }
 
 // 关闭模态窗口
