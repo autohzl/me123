@@ -59,30 +59,30 @@ const initialLinks = {
 };
 
 // DOM 元素
-const modal = document.getElementById('add-link-modal');
-const editModal = document.getElementById('edit-link-modal');
-const addBtn = document.getElementById('add-link-btn');
-const closeBtn = document.querySelector('.close');
-const editCloseBtn = document.getElementById('edit-close');
-const addLinkForm = document.getElementById('add-link-form');
-const editLinkForm = document.getElementById('edit-link-form');
-const dateDisplay = document.getElementById('date-display');
-const greeting = document.getElementById('greeting');
-const menuBtn = document.getElementById('menu-btn');
-const dropdownMenu = document.querySelector('.dropdown-menu');
-const exportBtn = document.getElementById('export-btn');
-const importFileInput = document.getElementById('import-file');
-const deleteLinkBtn = document.getElementById('delete-link-btn');
-const refreshIconsBtn = document.getElementById('refresh-icons-btn');
-const fetchNameBtn = document.getElementById('fetch-name-btn');
-const editFetchNameBtn = document.getElementById('edit-fetch-name-btn');
-const toggleLanguageBtn = document.getElementById('toggle-language-btn');
-const recentUrlsBtn = document.getElementById('recent-urls-btn');
-const recentUrlsDropdown = document.getElementById('recent-urls-dropdown');
-const setUsernameBtn = document.getElementById('set-username-btn');
-const usernameModal = document.getElementById('username-modal');
-const usernameCloseBtn = document.getElementById('username-close');
-const usernameForm = document.getElementById('username-form');
+let modal = document.getElementById('add-link-modal');
+let editModal = document.getElementById('edit-link-modal');
+let addBtn = document.getElementById('add-link-btn');
+let closeBtn = document.querySelector('.close');
+let editCloseBtn = document.getElementById('edit-close');
+let addLinkForm = document.getElementById('add-link-form');
+let editLinkForm = document.getElementById('edit-link-form');
+let dateDisplay = document.getElementById('date-display');
+let greeting = document.getElementById('greeting');
+let menuBtn = document.getElementById('menu-btn');
+let dropdownMenu = document.querySelector('.dropdown-menu');
+let exportBtn = document.getElementById('export-btn');
+let importFileInput = document.getElementById('import-file');
+let deleteLinkBtn = document.getElementById('delete-link-btn');
+let refreshIconsBtn = document.getElementById('refresh-icons-btn');
+let fetchNameBtn = document.getElementById('fetch-name-btn');
+let editFetchNameBtn = document.getElementById('edit-fetch-name-btn');
+let toggleLanguageBtn = document.getElementById('toggle-language-btn');
+let recentUrlsBtn = document.getElementById('recent-urls-btn');
+let recentUrlsDropdown = document.getElementById('recent-urls-dropdown');
+let setUsernameBtn = document.getElementById('set-username-btn');
+let usernameModal = document.getElementById('username-modal');
+let usernameCloseBtn = document.getElementById('username-close');
+let usernameForm = document.getElementById('username-form');
 
 // 获取本地存储的链接或使用初始数据
 let links = JSON.parse(localStorage.getItem('navLinks')) || initialLinks;
@@ -106,6 +106,11 @@ let pageTitle = localStorage.getItem('pageTitle') || '';
 
 // 获取当前语言的文本
 function getText(key) {
+    // 对于toggleLanguage键进行特殊处理，以确保始终返回正确的切换语言文本
+    if (key === 'toggleLanguage') {
+        return languages[currentLang]['toggleLanguage'];
+    }
+    
     // 如果是以cat_开头的键，需要特殊处理
     if (key && key.startsWith('cat_')) {
         // 首先检查当前语言中是否有此键的文本
@@ -285,57 +290,87 @@ function loadLinks() {
 function initPage() {
     // 初始化多语言数据
     initLanguageData();
-
-    // 更新日期和时间
-    updateDateTime();
-    setInterval(updateDateTime, 60000);  // 每分钟更新一次
-
-    // 更新问候语
-    updateGreeting();
-
-    // 从本地存储加载数据
+    
+    // 加载链接数据
     loadLinks();
-
+    
+    // 获取DOM元素
+    dateDisplay = document.getElementById('date-display');
+    greeting = document.getElementById('greeting');
+    dropdownMenu = document.querySelector('.dropdown-menu');
+    
+    // 定期更新日期和时间
+    updateDateTime();
+    setInterval(updateDateTime, 60000); // 每分钟更新一次
+    
+    // 应用当前语言
+    applyLanguage();
+    
+    // 确保语言切换按钮文本正确
+    document.getElementById('toggle-language-btn').textContent = getText('toggleLanguage');
+    
     // 渲染应用程序和书签
     renderApplications();
     renderBookmarks();
-
-    // 初始化事件监听器
+    
+    // 添加连接
+    document.getElementById('add-link-btn').addEventListener('click', () => {
+        openModal();
+    });
+    
     // 添加链接表单提交
     document.getElementById('add-link-form').addEventListener('submit', handleAddLink);
-
+    
     // 编辑链接表单提交
     document.getElementById('edit-link-form').addEventListener('submit', handleEditLink);
-
+    
     // 删除链接按钮点击
     document.getElementById('delete-link-btn').addEventListener('click', handleDeleteLink);
-
-    // 添加新链接按钮点击
-    document.getElementById('add-link-btn').addEventListener('click', openModal);
-
-    // 用于关闭模态窗口的所有元素
-    document.querySelectorAll('.close').forEach(el => {
-        el.addEventListener('click', function() {
-            if (this.closest('#add-link-modal')) {
-                closeModal();
-            } else if (this.closest('#edit-link-modal')) {
-                closeEditModal();
-            } else if (this.closest('#category-modal')) {
-                closeCategoryModal();
-            } else if (this.closest('#category-edit-modal')) {
-                closeCategoryEditModal();
-            } else if (this.closest('#username-modal')) {
-                closeUsernameModal();
-            } else if (this.closest('#themes-modal')) {
-                closeThemesModal();
+    
+    // 关闭模态窗口
+    const closeButtons = document.querySelectorAll('.close');
+    closeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const modal = button.closest('.modal');
+            modal.style.display = 'none';
+        });
+    });
+    
+    // 当用户在模态窗口外点击时关闭模态窗口
+    window.addEventListener('click', (e) => {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
             }
         });
     });
-
-    // 菜单相关
+    
+    // 菜单切换
     document.getElementById('menu-btn').addEventListener('click', toggleMenu);
+    document.addEventListener('click', (e) => {
+        if (!e.target.matches('#menu-btn') && !e.target.closest('.dropdown-menu')) {
+            dropdownMenu.classList.remove('active');
+        }
+    });
+    
+    // 导出按钮
     document.getElementById('export-btn').addEventListener('click', exportLinks);
+    
+    // 导入按钮
     document.getElementById('import-file').addEventListener('change', handleImportFile);
+    
+    // 更新下拉选项中的分类名称
+    updateCategorySelectOptions();
+    
+    // 监听语言变化，更新下拉选项
+    const observer = new MutationObserver(() => {
+        updateCategorySelectOptions();
+    });
+    
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+    
+    // 添加事件监听器
     document.getElementById('manage-categories-btn').addEventListener('click', openCategoryModal);
     document.getElementById('toggle-language-btn').addEventListener('click', toggleLanguage);
     document.getElementById('refresh-icons-btn').addEventListener('click', refreshAllIcons);
@@ -379,24 +414,6 @@ function initPage() {
     
     // 初始化主题
     initTheme();
-    
-    // 模态窗口点击外部关闭
-    window.addEventListener('click', function(e) {
-        const modals = [
-            document.getElementById('add-link-modal'),
-            document.getElementById('edit-link-modal'),
-            document.getElementById('category-modal'),
-            document.getElementById('category-edit-modal'),
-            document.getElementById('username-modal'),
-            document.getElementById('themes-modal')
-        ];
-        
-        modals.forEach(modal => {
-            if (e.target === modal) {
-                modal.style.display = 'none';
-            }
-        });
-    });
 }
 
 // 初始化主题
@@ -473,7 +490,10 @@ function applyLanguage() {
     document.getElementById('set-username-btn').textContent = getText('setUsername');
     document.getElementById('manage-categories-btn').textContent = getText('manageCategories');
     document.getElementById('themes-btn').textContent = getText('themes');
+    
+    // 确保始终更新语言切换按钮文本，无论切换多少次
     document.getElementById('toggle-language-btn').textContent = getText('toggleLanguage');
+    
     document.getElementById('refresh-icons-btn').textContent = getText('refreshIcons');
     document.getElementById('export-btn').textContent = getText('exportLinks');
     document.getElementById('import-label').textContent = getText('importLinks');
@@ -543,6 +563,9 @@ function toggleLanguage() {
     // 重新渲染，以更新书签和应用列表中的文本
     renderApplications();
     renderBookmarks();
+    
+    // 确保语言切换按钮的文本始终更新，无论切换多少次
+    document.getElementById('toggle-language-btn').textContent = getText('toggleLanguage');
     
     // 关闭菜单
     dropdownMenu.classList.remove('active');

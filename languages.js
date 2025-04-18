@@ -50,7 +50,7 @@ const languages = {
         refreshIcons: "刷新所有图标",
         exportLinks: "导出链接",
         importLinks: "导入链接",
-        toggleLanguage: "切换语言 / Language",
+        toggleLanguage: "切换为英文 / Switch to English",
         
         // 表单字段
         url: "网址:",
@@ -161,7 +161,7 @@ const languages = {
         refreshIcons: "Refresh All Icons",
         exportLinks: "Export Links",
         importLinks: "Import Links",
-        toggleLanguage: "Language / 切换语言",
+        toggleLanguage: "Switch to Chinese / 切换为中文",
         
         // Form fields
         url: "URL:",
