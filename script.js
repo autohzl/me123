@@ -1121,10 +1121,14 @@ function toggleMenu() {
 function exportLinks() {
     console.log("开始导出数据...");
     
-    // 准备导出数据，包括links和categoryNames
+    // 准备导出数据，包括links和categoryNames以及用户信息
     const exportData = {
         links: links,
-        categoryNames: {}
+        categoryNames: {},
+        userSettings: {
+            userName: userName,
+            pageTitle: pageTitle
+        }
     };
     
     // 加载分类名称映射
@@ -1166,22 +1170,40 @@ function handleImportFile(e) {
             // 解析导入的JSON数据
             const importedData = JSON.parse(event.target.result);
             
-            // 检查是否是新格式（包含categoryNames）
-            if (importedData.links && importedData.categoryNames) {
-                console.log("导入新格式数据，包含分类名称映射");
+            // 检查是否是新格式（包含categoryNames和用户设置）
+            if (importedData.links) {
+                console.log("导入数据格式有效");
                 links = importedData.links;
                 
-                // 保存分类名称映射
-                localStorage.setItem('categoryNames', JSON.stringify(importedData.categoryNames));
-                
-                // 更新languages对象，以便正确显示分类名称
-                for (const category in importedData.categoryNames) {
-                    const name = importedData.categoryNames[category];
-                    languages.zh[category] = name;
-                    languages.en[category] = name;
-                    console.log(`导入分类名称: ${category} -> ${name}`);
+                // 处理分类名称
+                if (importedData.categoryNames) {
+                    console.log("导入分类名称映射");
+                    localStorage.setItem('categoryNames', JSON.stringify(importedData.categoryNames));
+                    
+                    // 更新languages对象，以便正确显示分类名称
+                    for (const category in importedData.categoryNames) {
+                        const name = importedData.categoryNames[category];
+                        languages.zh[category] = name;
+                        languages.en[category] = name;
+                        console.log(`导入分类名称: ${category} -> ${name}`);
+                    }
                 }
-            } 
+                
+                // 导入用户设置（如果有）
+                if (importedData.userSettings) {
+                    if (importedData.userSettings.userName !== undefined) {
+                        userName = importedData.userSettings.userName;
+                        localStorage.setItem('userName', userName);
+                        console.log("导入用户名:", userName);
+                    }
+                    
+                    if (importedData.userSettings.pageTitle !== undefined) {
+                        pageTitle = importedData.userSettings.pageTitle;
+                        localStorage.setItem('pageTitle', pageTitle);
+                        console.log("导入页面标题:", pageTitle);
+                    }
+                }
+            }
             // 兼容旧格式（直接是links对象）
             else {
                 console.log("导入旧格式数据，无分类名称映射");
@@ -1214,6 +1236,10 @@ function handleImportFile(e) {
             
             // 重新初始化分类名称数据
             initLanguageData();
+            
+            // 更新页面标题和问候语
+            document.title = pageTitle || getText('appTitle');
+            updateGreeting();
             
             // 重新渲染
             renderApplications();
