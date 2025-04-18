@@ -637,6 +637,18 @@ function renderBookmarks() {
                 });
                 
                 li.appendChild(a);
+                
+                // 添加动态右移按钮
+                const actionBtn = document.createElement('button');
+                actionBtn.className = 'bookmark-action-btn';
+                actionBtn.innerHTML = '<i class="fas fa-ellipsis-v"></i>';
+                actionBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showEditOptions(category, linkIndex, e);
+                });
+                li.appendChild(actionBtn);
+                
                 ul.appendChild(li);
             });
         }

@@ -155,6 +155,9 @@ header {
 
 .category li {
     margin-bottom: 0.5rem;
+    position: relative;
+    padding-right: 30px; /* 为操作按钮预留空间 */
+    transition: all 0.3s ease;
 }
 
 .category a {
@@ -164,11 +167,14 @@ header {
     color: #ddd;
     text-decoration: none;
     padding: 0.3rem 0;
-    transition: color 0.2s;
+    width: calc(100% - 30px); /* 为按钮留出空间 */
+    transform: translateX(0);
+    transition: color 0.2s, transform 0.3s ease;
 }
 
 .category a:hover {
     color: #8bc34a;
+    transform: translateX(10px);
 }
 
 .category i {
@@ -181,6 +187,39 @@ header {
     height: 16px;
     object-fit: contain;
     min-width: 16px;
+}
+
+/* 书签项目操作按钮 */
+.bookmark-action-btn {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%) translateX(10px);
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    font-size: 0.9rem;
+    opacity: 0;
+    transition: all 0.3s ease;
+    padding: 2px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.bookmark-action-btn:hover {
+    background-color: rgba(139, 195, 74, 0.1);
+    color: #8bc34a;
+    transform: translateY(-50%) translateX(5px);
+}
+
+.category li:hover .bookmark-action-btn {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
 }
 
 /* 模态窗口样式 */
