@@ -544,6 +544,16 @@ function applyLanguage() {
     
     // 更新用户名设置模态窗口
     document.getElementById('username-title').textContent = getText('setUsername');
+    
+    // 更新高级设置模态窗口
+    if(document.getElementById('advanced-settings-title')) {
+        document.getElementById('advanced-settings-title').textContent = getText('advancedSettings');
+        document.getElementById('icon-settings-title').textContent = getText('iconSettings');
+        document.getElementById('icon-settings-desc').textContent = getText('iconSettingsDesc');
+        document.getElementById('use-network-icons-label').textContent = getText('useNetworkIcons');
+        document.getElementById('use-local-icons-label').textContent = getText('useLocalIcons');
+        document.getElementById('save-advanced-settings').textContent = getText('saveSettings');
+    }
 }
 
 // 更新分类下拉菜单选项的文本
@@ -1199,16 +1209,16 @@ function showEditOptions(category, index, event) {
     
     // 添加菜单选项
     const editBtn = document.createElement('button');
-    editBtn.textContent = '编辑';
+    editBtn.textContent = getText('edit');
     editBtn.addEventListener('click', () => {
         openEditModal(category, index);
         contextMenu.remove();
     });
     
     const deleteBtn = document.createElement('button');
-    deleteBtn.textContent = '删除';
+    deleteBtn.textContent = getText('delete');
     deleteBtn.addEventListener('click', () => {
-        if (confirm('确定要删除此链接吗？')) {
+        if (confirm(getText('confirmDelete'))) {
             links[category].splice(index, 1);
             localStorage.setItem('navLinks', JSON.stringify(links));
             renderApplications();
@@ -1218,7 +1228,7 @@ function showEditOptions(category, index, event) {
     });
     
     const openBtn = document.createElement('button');
-    openBtn.textContent = '打开链接';
+    openBtn.textContent = getText('open');
     openBtn.addEventListener('click', () => {
         window.open(links[category][index].url, '_blank');
         contextMenu.remove();
@@ -2538,7 +2548,7 @@ function createTempModal(modalId, tabInfo) {
     
     // 添加标题
     const title = document.createElement('h2');
-    title.textContent = '添加来自扩展的链接';
+    title.textContent = getText('addNewLink');
     
     // 创建表单
     const form = document.createElement('form');
@@ -2549,7 +2559,7 @@ function createTempModal(modalId, tabInfo) {
     urlGroup.className = 'form-group';
     
     const urlLabel = document.createElement('label');
-    urlLabel.textContent = '网址:';
+    urlLabel.textContent = getText('url');
     
     const urlInput = document.createElement('input');
     urlInput.type = 'url';
@@ -2564,7 +2574,7 @@ function createTempModal(modalId, tabInfo) {
     nameGroup.className = 'form-group';
     
     const nameLabel = document.createElement('label');
-    nameLabel.textContent = '名称:';
+    nameLabel.textContent = getText('name');
     
     const nameInput = document.createElement('input');
     nameInput.type = 'text';
@@ -2578,7 +2588,7 @@ function createTempModal(modalId, tabInfo) {
     categoryGroup.className = 'form-group';
     
     const categoryLabel = document.createElement('label');
-    categoryLabel.textContent = '分类:';
+    categoryLabel.textContent = getText('category');
     
     const categorySelect = document.createElement('select');
     categorySelect.required = true;
@@ -2605,7 +2615,7 @@ function createTempModal(modalId, tabInfo) {
     // 添加按钮
     const submitBtn = document.createElement('button');
     submitBtn.type = 'submit';
-    submitBtn.textContent = '添加';
+    submitBtn.textContent = getText('add');
     
     // 处理表单提交
     form.addEventListener('submit', function(e) {
