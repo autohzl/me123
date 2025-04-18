@@ -47,8 +47,8 @@ document.addEventListener('DOMContentLoaded', function() {
       const sendButton = document.createElement('button');
       sendButton.textContent = '发送';
       sendButton.className = 'send-button';
-      sendButton.addEventListener('click', function() {
-        sendToCurrentTab(tab);
+      sendButton.addEventListener('click', function(event) {
+        sendToCurrentTab(tab, event.target);
       });
       tabElement.appendChild(sendButton);
       
@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // 发送所选标签信息到当前标签页
-  function sendToCurrentTab(selectedTab) {
+  function sendToCurrentTab(selectedTab, sendButton) {
     // 获取当前活动标签
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
       const currentTab = tabs[0];
@@ -170,16 +170,36 @@ document.addEventListener('DOMContentLoaded', function() {
               if (response) {
                 if (response.success) {
                   // 发送成功
-                  statusText.textContent = '发送成功！';
+                  statusText.textContent = '发送成功！窗口将保持打开，您可以继续发送其他标签。';
                   statusText.className = 'status success';
                   
-                  // 2秒后关闭弹窗
-                  setTimeout(function() {
-                    window.close();
-                  }, 2000);
+                  // 更新发送按钮的状态
+                  sendButton.textContent = '已发送';
+                  sendButton.style.backgroundColor = '#4CAF50';
+                  sendButton.disabled = true;
+                  
+                  // 给整个标签项添加一个淡绿色背景
+                  const tabItem = sendButton.closest('.tab-item');
+                  if (tabItem) {
+                    tabItem.style.backgroundColor = 'rgba(76, 175, 80, 0.1)';
+                    tabItem.style.borderLeft = '3px solid #4CAF50';
+                  }
+                  
                 } else {
                   // 发送失败
                   statusText.className = 'status error';
+                  
+                  // 为发送失败的按钮添加视觉提示
+                  if (sendButton) {
+                    sendButton.textContent = '失败';
+                    sendButton.style.backgroundColor = '#f44336';
+                    
+                    // 2秒后恢复按钮状态，允许用户重试
+                    setTimeout(function() {
+                      sendButton.textContent = '重试';
+                      sendButton.style.backgroundColor = '#ff9800';
+                    }, 2000);
+                  }
                   
                   if (response.error === 'NOT_NAV_PAGE') {
                     statusText.textContent = '发送失败，请确保导航页已打开';
