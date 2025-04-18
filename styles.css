@@ -1015,4 +1015,31 @@ button[type="submit"]:hover {
 
 .settings-option:hover label {
     color: var(--text-primary);
+}
+
+/* 页脚样式 */
+.footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding: 1rem 0;
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+    border-top: 1px solid var(--bg-tertiary);
+}
+
+.footer a {
+    color: var(--accent-primary);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.footer a:hover {
+    color: var(--accent-hover);
+    text-decoration: underline;
+}
+
+.footer i {
+    font-size: 1rem;
+    vertical-align: middle;
+    margin-left: 0.3rem;
 } 

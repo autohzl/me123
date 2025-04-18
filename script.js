@@ -556,6 +556,14 @@ function applyLanguage() {
         document.getElementById('use-local-icons-label').textContent = getText('useLocalIcons');
         document.getElementById('save-advanced-settings').textContent = getText('saveSettings');
     }
+    
+    // 更新页脚文本
+    if(document.getElementById('footer-text')) {
+        document.getElementById('footer-text').textContent = getText('footerText');
+    }
+    if(document.getElementById('github-author')) {
+        document.getElementById('github-author').textContent = getText('githubAuthor');
+    }
 }
 
 // 更新分类下拉菜单选项的文本

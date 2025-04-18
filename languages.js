@@ -121,7 +121,11 @@ const languages = {
         iconSettings: "图标设置",
         useLocalIcons: "使用本地图标",
         useNetworkIcons: "使用网络图标",
-        iconSettingsDesc: "选择获取网站图标的方式"
+        iconSettingsDesc: "选择获取网站图标的方式",
+        
+        // 页脚
+        footerText: "© 2023-2024 by",
+        githubAuthor: "autohzl"
     },
     
     en: {
@@ -224,6 +228,10 @@ const languages = {
         iconSettings: "Icon Settings",
         useLocalIcons: "Use Local Icons",
         useNetworkIcons: "Use Network Icons",
-        iconSettingsDesc: "Choose how to retrieve website icons"
+        iconSettingsDesc: "Choose how to retrieve website icons",
+        
+        // Footer
+        footerText: "© 2023-2024 by",
+        githubAuthor: "autohzl"
     }
 }; 
