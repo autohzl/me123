@@ -119,6 +119,42 @@
 - 添加天气API集成
 - 提供更多个性化选项
 
+### 国内用户使用说明
+
+由于网络限制，中国用户可能无法正常加载谷歌托管的图标。我们已经内置了便捷的解决方案：
+
+1. 点击右上角菜单中的"高级设置"
+2. 在图标设置区域选择"使用本地图标"选项，完全禁用网络图标，使用本地Font Awesome图标替代
+3. 点击"保存"按钮应用设置
+
+这些设置会保存在本地，下次打开时自动应用。如果您是开发者，也可以在代码中修改：
+
+```javascript
+// 在script.js中修改getFaviconUrl函数
+function getFaviconUrl(url) {
+    // 直接返回null使用默认图标
+    return null;
+}
+```
+
+### Notes for Users in China
+
+Due to network restrictions, users in China may not be able to load Google-hosted icons normally. We have built-in a convenient solution:
+
+1. Click on "Advanced Settings" in the top right menu
+2. In the Icon Settings section, select "Use Local Icons" option to completely disable network icons, using local Font Awesome icons instead
+3. Click the "Save" button to apply settings
+
+These settings will be saved locally and applied automatically next time. If you are a developer, you can also modify the code:
+
+```javascript
+// Modify the getFaviconUrl function in script.js
+function getFaviconUrl(url) {
+    // Return null to use default icons
+    return null;
+}
+```
+
 ## 许可
 
 MIT 
@@ -239,6 +275,42 @@ There are two ways to switch themes:
 - Add custom backgrounds and more themes
 - Add weather API integration
 - Provide more personalization options
+
+### 国内用户使用说明
+
+由于网络限制，中国用户可能无法正常加载谷歌托管的图标。我们已经内置了便捷的解决方案：
+
+1. 点击右上角菜单中的"高级设置"
+2. 在图标设置区域选择"使用本地图标"选项，完全禁用网络图标，使用本地Font Awesome图标替代
+3. 点击"保存"按钮应用设置
+
+这些设置会保存在本地，下次打开时自动应用。如果您是开发者，也可以在代码中修改：
+
+```javascript
+// 在script.js中修改getFaviconUrl函数
+function getFaviconUrl(url) {
+    // 直接返回null使用默认图标
+    return null;
+}
+```
+
+### Notes for Users in China
+
+Due to network restrictions, users in China may not be able to load Google-hosted icons normally. We have built-in a convenient solution:
+
+1. Click on "Advanced Settings" in the top right menu
+2. In the Icon Settings section, select "Use Local Icons" option to completely disable network icons, using local Font Awesome icons instead
+3. Click the "Save" button to apply settings
+
+These settings will be saved locally and applied automatically next time. If you are a developer, you can also modify the code:
+
+```javascript
+// Modify the getFaviconUrl function in script.js
+function getFaviconUrl(url) {
+    // Return null to use default icons
+    return null;
+}
+```
 
 ## License
 

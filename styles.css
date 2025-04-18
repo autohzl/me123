@@ -976,4 +976,43 @@ button[type="submit"]:hover {
 
 .context-menu button:hover {
     background-color: var(--bg-primary);
+}
+
+/* 高级设置样式 */
+.settings-section {
+    background-color: var(--bg-tertiary);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.settings-section h3 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    color: var(--accent-primary);
+}
+
+.settings-description {
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.settings-option {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.8rem;
+}
+
+.settings-option input[type="radio"] {
+    margin-right: 0.5rem;
+}
+
+.settings-option label {
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.settings-option:hover label {
+    color: var(--text-primary);
 } 

@@ -104,6 +104,9 @@ let currentLang = localStorage.getItem('language') || 'zh';
 let userName = localStorage.getItem('userName') || '';
 let pageTitle = localStorage.getItem('pageTitle') || '';
 
+// 图标源设置：network(默认), local, chinese-api
+let iconSource = localStorage.getItem('iconSource') || 'network';
+
 // 获取当前语言的文本
 function getText(key) {
     // 对于toggleLanguage键进行特殊处理，以确保始终返回正确的切换语言文本
@@ -376,6 +379,10 @@ function initPage() {
     document.getElementById('refresh-icons-btn').addEventListener('click', refreshAllIcons);
     document.getElementById('set-username-btn').addEventListener('click', openUsernameModal);
     document.getElementById('themes-btn').addEventListener('click', openThemesModal);
+    document.getElementById('advanced-settings-btn').addEventListener('click', openAdvancedSettingsModal);
+    
+    // 保存高级设置
+    document.getElementById('save-advanced-settings').addEventListener('click', saveAdvancedSettings);
 
     // 初始化拖拽排序
     initDragSortTouch();
@@ -490,6 +497,7 @@ function applyLanguage() {
     document.getElementById('set-username-btn').textContent = getText('setUsername');
     document.getElementById('manage-categories-btn').textContent = getText('manageCategories');
     document.getElementById('themes-btn').textContent = getText('themes');
+    document.getElementById('advanced-settings-btn').textContent = getText('advancedSettings');
     
     // 确保始终更新语言切换按钮文本，无论切换多少次
     document.getElementById('toggle-language-btn').textContent = getText('toggleLanguage');
@@ -1150,9 +1158,20 @@ function getFaviconUrl(url, forceRefresh = false) {
     try {
         const urlObj = new URL(url);
         const domain = urlObj.hostname;
+        let faviconUrl;
         
-        // 使用Google的favicon服务（此服务公开可用）
-        let faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+        // 根据图标源设置选择获取方式
+        switch(iconSource) {
+            case 'local':
+                // 使用默认的Font Awesome图标代替
+                return null; // 返回null会使应用程序使用默认图标
+                
+            case 'network':
+            default:
+                // 使用Google的favicon服务
+                faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+                break;
+        }
         
         // 如果是强制刷新，添加时间戳参数避免缓存
         if (forceRefresh) {
@@ -2743,6 +2762,65 @@ function openThemesModal() {
 // 关闭主题设置模态窗口
 function closeThemesModal() {
     document.getElementById('themes-modal').style.display = 'none';
+}
+
+// 打开高级设置模态窗口
+function openAdvancedSettingsModal() {
+    const modal = document.getElementById('advanced-settings-modal');
+    
+    // 更新模态窗口中的文本
+    document.getElementById('advanced-settings-title').textContent = getText('advancedSettings');
+    document.getElementById('icon-settings-title').textContent = getText('iconSettings');
+    document.getElementById('icon-settings-desc').textContent = getText('iconSettingsDesc');
+    document.getElementById('use-network-icons-label').textContent = getText('useNetworkIcons');
+    document.getElementById('use-local-icons-label').textContent = getText('useLocalIcons');
+    document.getElementById('save-advanced-settings').textContent = getText('saveSettings');
+    
+    // 设置当前选中的图标源
+    const radioButtons = document.getElementsByName('icon-source');
+    for(let i = 0; i < radioButtons.length; i++) {
+        if(radioButtons[i].value === iconSource) {
+            radioButtons[i].checked = true;
+        }
+    }
+    
+    // 显示模态窗口
+    modal.style.display = 'block';
+    
+    // 关闭菜单
+    dropdownMenu.classList.remove('active');
+}
+
+// 保存高级设置
+function saveAdvancedSettings() {
+    // 获取选中的图标源
+    const radioButtons = document.getElementsByName('icon-source');
+    let selectedIconSource = 'network'; // 默认值
+    
+    for(let i = 0; i < radioButtons.length; i++) {
+        if(radioButtons[i].checked) {
+            selectedIconSource = radioButtons[i].value;
+            break;
+        }
+    }
+    
+    // 如果设置有变化
+    if(selectedIconSource !== iconSource) {
+        // 更新设置
+        iconSource = selectedIconSource;
+        localStorage.setItem('iconSource', iconSource);
+        
+        // 刷新所有图标
+        refreshAllIcons();
+    }
+    
+    // 关闭模态窗口
+    document.getElementById('advanced-settings-modal').style.display = 'none';
+}
+
+// 关闭高级设置模态窗口
+function closeAdvancedSettingsModal() {
+    document.getElementById('advanced-settings-modal').style.display = 'none';
 }
 
 // 初始化页面

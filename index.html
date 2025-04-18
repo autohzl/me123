@@ -233,6 +233,7 @@
             <button id="set-username-btn">设置用户名</button>
             <button id="manage-categories-btn">管理分类</button>
             <button id="themes-btn">主题设置</button>
+            <button id="advanced-settings-btn">高级设置</button>
             <button id="toggle-language-btn">切换语言 / Language</button>
             <button id="refresh-icons-btn">刷新所有图标</button>
             <button id="export-btn">导出链接</button>
@@ -255,6 +256,31 @@
                 <div class="theme-option theme-purple" data-theme="purple" title="紫色主题"></div>
             </div>
             <p id="theme-description" style="text-align: center; margin-bottom: 20px;">选择您喜欢的主题颜色</p>
+        </div>
+    </div>
+
+    <!-- 高级设置模态窗口 -->
+    <div id="advanced-settings-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="advanced-settings-close">&times;</span>
+            <h2 id="advanced-settings-title">高级设置</h2>
+            
+            <div class="settings-section">
+                <h3 id="icon-settings-title">图标设置</h3>
+                <p id="icon-settings-desc" class="settings-description">选择获取网站图标的方式</p>
+                
+                <div class="settings-option">
+                    <input type="radio" id="use-network-icons" name="icon-source" value="network">
+                    <label for="use-network-icons" id="use-network-icons-label">使用网络图标</label>
+                </div>
+                
+                <div class="settings-option">
+                    <input type="radio" id="use-local-icons" name="icon-source" value="local">
+                    <label for="use-local-icons" id="use-local-icons-label">使用本地图标</label>
+                </div>
+            </div>
+            
+            <button type="button" id="save-advanced-settings" class="edit-btn">保存</button>
         </div>
     </div>
 

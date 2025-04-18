@@ -112,7 +112,16 @@ const languages = {
         blueTheme: "蓝色主题",
         purpleTheme: "紫色主题",
         customizeTheme: "自定义主题",
-        themeDescription: "选择您喜欢的主题颜色"
+        themeDescription: "选择您喜欢的主题颜色",
+        
+        // 高级设置
+        advancedSettings: "高级设置",
+        disableNetworkIcons: "禁用网络图标",
+        disableNetworkIconsDesc: "使用本地默认图标代替从网络获取的图标",
+        iconSettings: "图标设置",
+        useLocalIcons: "使用本地图标",
+        useNetworkIcons: "使用网络图标",
+        iconSettingsDesc: "选择获取网站图标的方式"
     },
     
     en: {
@@ -206,6 +215,15 @@ const languages = {
         blueTheme: "Blue Theme",
         purpleTheme: "Purple Theme",
         customizeTheme: "Customize Theme",
-        themeDescription: "Choose your preferred theme color"
+        themeDescription: "Choose your preferred theme color",
+        
+        // Advanced settings
+        advancedSettings: "Advanced Settings",
+        disableNetworkIcons: "Disable Network Icons",
+        disableNetworkIconsDesc: "Use local default icons instead of fetching from network",
+        iconSettings: "Icon Settings",
+        useLocalIcons: "Use Local Icons",
+        useNetworkIcons: "Use Network Icons",
+        iconSettingsDesc: "Choose how to retrieve website icons"
     }
 }; 
