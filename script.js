@@ -245,77 +245,189 @@ function getLastSelectedCategory() {
     return localStorage.getItem('lastSelectedCategory') || 'applications'; // 默认返回 'applications'
 }
 
+// 从本地存储加载链接数据
+function loadLinks() {
+    try {
+        // 尝试从localStorage获取导航链接数据
+        const savedLinks = localStorage.getItem('navLinks');
+        if (savedLinks) {
+            links = JSON.parse(savedLinks);
+            console.log("已从本地存储加载链接数据");
+            
+            // 确保links中有categoryOrder数组
+            if (!links.categoryOrder) {
+                // 如果没有分类顺序数组，则创建一个，包含所有非applications分类
+                links.categoryOrder = Object.keys(links).filter(key => 
+                    key !== 'applications' && 
+                    key !== 'categoryOrder' && 
+                    typeof links[key] === 'object'
+                );
+                localStorage.setItem('navLinks', JSON.stringify(links));
+                console.log("创建了缺失的分类顺序数组");
+            }
+        } else {
+            // 如果没有保存的数据，使用初始数据
+            links = initialLinks;
+            console.log("使用初始链接数据");
+            
+            // 保存初始数据到localStorage
+            localStorage.setItem('navLinks', JSON.stringify(links));
+        }
+    } catch (error) {
+        console.error("加载链接数据时出错:", error);
+        // 出错时使用初始数据
+        links = initialLinks;
+        localStorage.setItem('navLinks', JSON.stringify(links));
+    }
+}
+
 // 初始化页面
 function initPage() {
-    // 初始化分类名称数据
+    // 初始化多语言数据
     initLanguageData();
-    
-    // 应用语言设置
-    applyLanguage();
-    
+
+    // 更新日期和时间
     updateDateTime();
-    setInterval(updateDateTime, 60000); // 每分钟更新一次日期时间
-    
+    setInterval(updateDateTime, 60000);  // 每分钟更新一次
+
+    // 更新问候语
+    updateGreeting();
+
+    // 从本地存储加载数据
+    loadLinks();
+
+    // 渲染应用程序和书签
     renderApplications();
     renderBookmarks();
-    
-    // 事件监听器
-    addBtn.addEventListener('click', openModal);
-    closeBtn.addEventListener('click', closeModal);
-    editCloseBtn.addEventListener('click', closeEditModal);
-    window.addEventListener('click', (e) => {
-        if (e.target === modal) closeModal();
-        if (e.target === editModal) closeEditModal();
-        if (e.target === categoryModal) closeCategoryModal();
-        if (e.target === usernameModal) closeUsernameModal();
-        
-        // 点击其他区域关闭历史记录下拉菜单
-        if (!e.target.closest('#recent-urls-btn') && !e.target.closest('#recent-urls-dropdown')) {
-            recentUrlsDropdown.classList.remove('active');
-        }
+
+    // 初始化事件监听器
+    // 添加链接表单提交
+    document.getElementById('add-link-form').addEventListener('submit', handleAddLink);
+
+    // 编辑链接表单提交
+    document.getElementById('edit-link-form').addEventListener('submit', handleEditLink);
+
+    // 删除链接按钮点击
+    document.getElementById('delete-link-btn').addEventListener('click', handleDeleteLink);
+
+    // 添加新链接按钮点击
+    document.getElementById('add-link-btn').addEventListener('click', openModal);
+
+    // 用于关闭模态窗口的所有元素
+    document.querySelectorAll('.close').forEach(el => {
+        el.addEventListener('click', function() {
+            if (this.closest('#add-link-modal')) {
+                closeModal();
+            } else if (this.closest('#edit-link-modal')) {
+                closeEditModal();
+            } else if (this.closest('#category-modal')) {
+                closeCategoryModal();
+            } else if (this.closest('#category-edit-modal')) {
+                closeCategoryEditModal();
+            } else if (this.closest('#username-modal')) {
+                closeUsernameModal();
+            } else if (this.closest('#themes-modal')) {
+                closeThemesModal();
+            }
+        });
     });
-    addLinkForm.addEventListener('submit', handleAddLink);
-    editLinkForm.addEventListener('submit', handleEditLink);
-    deleteLinkBtn.addEventListener('click', handleDeleteLink);
-    
-    // 菜单事件
-    menuBtn.addEventListener('click', toggleMenu);
-    exportBtn.addEventListener('click', exportLinks);
-    importFileInput.addEventListener('change', handleImportFile);
-    refreshIconsBtn.addEventListener('click', refreshAllIcons);
-    toggleLanguageBtn.addEventListener('click', toggleLanguage);
-    manageCategoriesBtn.addEventListener('click', openCategoryModal);
-    setUsernameBtn.addEventListener('click', openUsernameModal);
-    
-    // 用户名设置事件
-    usernameCloseBtn.addEventListener('click', closeUsernameModal);
-    usernameForm.addEventListener('submit', handleUsernameSubmit);
-    
-    // 自动获取名称按钮事件
-    fetchNameBtn.addEventListener('click', handleFetchName);
-    editFetchNameBtn.addEventListener('click', handleEditFetchName);
-    
-    // 历史记录下拉菜单事件
-    recentUrlsBtn.addEventListener('click', toggleRecentUrlsDropdown);
-    
-    // 点击其他地方关闭菜单
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.menu-container')) {
-            dropdownMenu.classList.remove('active');
-        }
-    });
-    
-    // 添加长按事件（用于移动设备）
-    setupLongPressEvents();
-    
-    // 初始化拖拽排序功能
+
+    // 菜单相关
+    document.getElementById('menu-btn').addEventListener('click', toggleMenu);
+    document.getElementById('export-btn').addEventListener('click', exportLinks);
+    document.getElementById('import-file').addEventListener('change', handleImportFile);
+    document.getElementById('manage-categories-btn').addEventListener('click', openCategoryModal);
+    document.getElementById('toggle-language-btn').addEventListener('click', toggleLanguage);
+    document.getElementById('refresh-icons-btn').addEventListener('click', refreshAllIcons);
+    document.getElementById('set-username-btn').addEventListener('click', openUsernameModal);
+    document.getElementById('themes-btn').addEventListener('click', openThemesModal);
+
+    // 初始化拖拽排序
     initDragSortTouch();
-    
-    // 初始化分类拖拽功能
+
+    // 初始化分类拖拽排序
     initCategoryDragSort();
+
+    // 设置长按事件
+    setupLongPressEvents();
+
+    // 自动获取网址名称
+    document.getElementById('fetch-name-btn').addEventListener('click', handleFetchName);
+    document.getElementById('edit-fetch-name-btn').addEventListener('click', handleEditFetchName);
+
+    // 最近添加的URL下拉菜单
+    document.getElementById('recent-urls-btn').addEventListener('click', toggleRecentUrlsDropdown);
+    document.addEventListener('click', function(e) {
+        const dropdown = document.getElementById('recent-urls-dropdown');
+        const button = document.getElementById('recent-urls-btn');
+        if (!dropdown.contains(e.target) && e.target !== button) {
+            dropdown.classList.remove('active');
+        }
+    });
+
+    // 添加分类表单提交
+    document.getElementById('category-form').addEventListener('submit', handleAddCategory);
+
+    // 编辑分类表单提交
+    document.getElementById('category-edit-form').addEventListener('submit', handleEditCategory);
+
+    // 删除分类按钮点击
+    document.getElementById('delete-category-btn').addEventListener('click', handleDeleteCategory);
+
+    // 用户名设置表单提交
+    document.getElementById('username-form').addEventListener('submit', handleUsernameSubmit);
     
-    // 设置页面标题
-    document.title = getText('appTitle');
+    // 初始化主题
+    initTheme();
+    
+    // 模态窗口点击外部关闭
+    window.addEventListener('click', function(e) {
+        const modals = [
+            document.getElementById('add-link-modal'),
+            document.getElementById('edit-link-modal'),
+            document.getElementById('category-modal'),
+            document.getElementById('category-edit-modal'),
+            document.getElementById('username-modal'),
+            document.getElementById('themes-modal')
+        ];
+        
+        modals.forEach(modal => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    });
+}
+
+// 初始化主题
+function initTheme() {
+    // 从localStorage获取保存的主题
+    const currentTheme = localStorage.getItem('theme') || 'default';
+    
+    // 应用保存的主题
+    applyTheme(currentTheme);
+}
+
+// 应用主题
+function applyTheme(theme) {
+    // 删除之前的主题类
+    document.body.classList.remove('light-theme', 'blue-theme', 'purple-theme');
+    
+    // 添加新的主题类
+    switch (theme) {
+        case 'light':
+            document.body.classList.add('light-theme');
+            break;
+        case 'blue':
+            document.body.classList.add('blue-theme');
+            break;
+        case 'purple':
+            document.body.classList.add('purple-theme');
+            break;
+        default:
+            // 默认深色主题，不需要添加类
+            break;
+    }
 }
 
 // 应用当前语言到界面
@@ -357,35 +469,53 @@ function applyLanguage() {
     document.getElementById('delete-link-btn').textContent = getText('delete');
     document.getElementById('edit-fetch-name-btn').textContent = getText('autoFetch');
     
-    // 更新菜单项
+    // 更新菜单
+    document.getElementById('set-username-btn').textContent = getText('setUsername');
+    document.getElementById('manage-categories-btn').textContent = getText('manageCategories');
+    document.getElementById('themes-btn').textContent = getText('themes');
     document.getElementById('toggle-language-btn').textContent = getText('toggleLanguage');
     document.getElementById('refresh-icons-btn').textContent = getText('refreshIcons');
     document.getElementById('export-btn').textContent = getText('exportLinks');
     document.getElementById('import-label').textContent = getText('importLinks');
-    document.getElementById('manage-categories-btn').textContent = getText('manageCategories');
     
-    // 更新分类下拉菜单选项
-    updateCategoryOptions('link-category');
-    updateCategoryOptions('edit-link-new-category');
-    
-    // 更新问候语
-    updateGreeting();
-    
-    // 如果历史记录下拉菜单正在显示，则重新渲染
-    if (recentUrlsDropdown.classList.contains('active')) {
-        renderRecentUrls();
+    // 更新主题设置模态窗口
+    if(document.getElementById('themes-title')) {
+        document.getElementById('themes-title').textContent = getText('themes');
+    }
+    if(document.getElementById('theme-description')) {
+        document.getElementById('theme-description').textContent = getText('themeDescription');
     }
     
-    // 更新分类管理模态窗口
+    // 更新主题选项的提示文本
+    document.querySelectorAll('.theme-option').forEach(option => {
+        const themeType = option.getAttribute('data-theme');
+        switch(themeType) {
+            case 'default':
+                option.setAttribute('title', getText('darkTheme'));
+                break;
+            case 'light':
+                option.setAttribute('title', getText('lightTheme'));
+                break;
+            case 'blue':
+                option.setAttribute('title', getText('blueTheme'));
+                break;
+            case 'purple':
+                option.setAttribute('title', getText('purpleTheme'));
+                break;
+        }
+    });
+    
+    // 更新分类模态窗口
     document.getElementById('category-modal-title').textContent = getText('manageCategories');
-    document.getElementById('add-category-btn').textContent = getText('addCategory');
     document.getElementById('new-category-name').placeholder = getText('newCategoryName');
+    document.getElementById('add-category-btn').textContent = getText('addCategory');
     
     // 更新分类编辑模态窗口
     document.getElementById('category-edit-title').textContent = getText('editCategory');
-    document.querySelector('#category-edit-form label').textContent = getText('categoryName');
-    document.querySelector('#category-edit-form .edit-btn').textContent = getText('update');
-    document.getElementById('delete-category-btn').textContent = getText('delete');
+    document.getElementById('delete-category-btn').textContent = getText('deleteCategory');
+    
+    // 更新用户名设置模态窗口
+    document.getElementById('username-title').textContent = getText('setUsername');
 }
 
 // 更新分类下拉菜单选项的文本
@@ -2525,6 +2655,72 @@ document.addEventListener('DOMContentLoaded', function() {
         return processExtensionData(tabInfo);
     };
 });
+
+// 打开主题设置模态窗口
+function openThemesModal() {
+    const modal = document.getElementById('themes-modal');
+    modal.style.display = 'block';
+    
+    // 更新模态窗口中的主题选择器，标记当前主题
+    const currentTheme = localStorage.getItem('theme') || 'default';
+    document.querySelectorAll('#themes-modal .theme-option').forEach(option => {
+        if (option.getAttribute('data-theme') === currentTheme) {
+            option.classList.add('active');
+        } else {
+            option.classList.remove('active');
+        }
+        
+        // 更新主题选项的提示文字为当前语言
+        const themeType = option.getAttribute('data-theme');
+        switch(themeType) {
+            case 'default':
+                option.setAttribute('title', getText('darkTheme'));
+                break;
+            case 'light':
+                option.setAttribute('title', getText('lightTheme'));
+                break;
+            case 'blue':
+                option.setAttribute('title', getText('blueTheme'));
+                break;
+            case 'purple':
+                option.setAttribute('title', getText('purpleTheme'));
+                break;
+        }
+    });
+    
+    // 为模态窗口中的主题选项添加点击事件
+    document.querySelectorAll('#themes-modal .theme-option').forEach(option => {
+        // 移除旧的事件监听器，避免重复绑定
+        const oldOption = option.cloneNode(true);
+        option.parentNode.replaceChild(oldOption, option);
+        
+        oldOption.addEventListener('click', function() {
+            const theme = this.getAttribute('data-theme');
+            applyTheme(theme);
+            
+            // 更新所有主题选择器的活动状态
+            document.querySelectorAll('.theme-option').forEach(opt => {
+                if (opt.getAttribute('data-theme') === theme) {
+                    opt.classList.add('active');
+                } else {
+                    opt.classList.remove('active');
+                }
+            });
+            
+            // 保存主题设置到localStorage
+            localStorage.setItem('theme', theme);
+        });
+    });
+    
+    // 更新主题设置模态窗口标题和描述文字
+    document.getElementById('themes-title').textContent = getText('themes');
+    document.getElementById('theme-description').textContent = getText('themeDescription');
+}
+
+// 关闭主题设置模态窗口
+function closeThemesModal() {
+    document.getElementById('themes-modal').style.display = 'none';
+}
 
 // 初始化页面
 document.addEventListener('DOMContentLoaded', initPage); 

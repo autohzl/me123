@@ -232,6 +232,7 @@
         <div class="dropdown-menu">
             <button id="set-username-btn">设置用户名</button>
             <button id="manage-categories-btn">管理分类</button>
+            <button id="themes-btn">主题设置</button>
             <button id="toggle-language-btn">切换语言 / Language</button>
             <button id="refresh-icons-btn">刷新所有图标</button>
             <button id="export-btn">导出链接</button>
@@ -239,6 +240,21 @@
                 <label for="import-file" id="import-label">导入链接</label>
                 <input type="file" id="import-file" accept=".json">
             </div>
+        </div>
+    </div>
+
+    <!-- 主题设置模态窗口 -->
+    <div id="themes-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="themes-close">&times;</span>
+            <h2 id="themes-title">主题设置</h2>
+            <div class="theme-selector" style="margin: 20px 0;">
+                <div class="theme-option theme-dark" data-theme="default" title="深色主题"></div>
+                <div class="theme-option theme-light" data-theme="light" title="浅色主题"></div>
+                <div class="theme-option theme-blue" data-theme="blue" title="蓝色主题"></div>
+                <div class="theme-option theme-purple" data-theme="purple" title="紫色主题"></div>
+            </div>
+            <p id="theme-description" style="text-align: center; margin-bottom: 20px;">选择您喜欢的主题颜色</p>
         </div>
     </div>
 

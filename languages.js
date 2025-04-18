@@ -88,12 +88,36 @@ const languages = {
         cannotDeleteNonEmptyCategory: "无法删除非空分类，请先移动或删除此分类中的所有链接",
         categoryNameRequired: "分类名称不能为空",
         categoryOrderSaved: "分类顺序已保存",
-        dragToReorder: "拖动分类改变显示顺序"
+        dragToReorder: "拖动分类改变显示顺序",
+        
+        // 书签项右键菜单
+        editBookmark: "编辑书签",
+        deleteBookmark: "删除书签",
+        
+        // 导入导出
+        exportSuccess: "导出成功，请保存文件",
+        importError: "导入失败，请检查文件格式",
+        
+        // 拖拽排序提示
+        dragTip: "提示：拖拽可以调整顺序，长按可以编辑",
+        
+        // 图标刷新
+        refreshingIcons: "正在刷新图标...",
+        refreshSuccess: "所有图标已刷新",
+        
+        // 主题
+        themes: "主题设置",
+        darkTheme: "深色主题",
+        lightTheme: "浅色主题",
+        blueTheme: "蓝色主题",
+        purpleTheme: "紫色主题",
+        customizeTheme: "自定义主题",
+        themeDescription: "选择您喜欢的主题颜色"
     },
     
     en: {
         // General
-        appTitle: "Personal Navigation Page",
+        appTitle: "Personal Dashboard",
         
         // Greetings
         morning: "Good morning!",
@@ -105,12 +129,11 @@ const languages = {
         
         // Username settings
         setUsername: "Set Username",
-        yourName: "Your Name:",
-        pageTitle: "Navigation Page Title:",
-        pageTitlePlaceholder: "e.g.: Personal Navigation Page",
+        yourName: "Your name:",
+        pageTitle: "Dashboard title:",
+        pageTitlePlaceholder: "e.g., Personal Dashboard",
         saveSettings: "Save",
-        
-        // Date format options
+        // Date formatting options
         dateFormatOptions: { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' },
         
         // Section titles
@@ -132,7 +155,7 @@ const languages = {
         edit: "Edit",
         update: "Update",
         delete: "Delete",
-        open: "Open Link",
+        open: "Open link",
         autoFetch: "Auto Fetch",
         fetching: "Fetching...",
         refreshIcons: "Refresh All Icons",
@@ -144,38 +167,45 @@ const languages = {
         url: "URL:",
         name: "Name:",
         category: "Category:",
-        moveToCategory: "Move to:",
+        moveToCategory: "Move to category:",
         
         // Add/Edit modals
         addNewLink: "Add New Link",
         editLink: "Edit Link",
         urlPlaceholder: "https://example.com",
         namePlaceholder: "Website name (optional)",
-        editNamePlaceholder: "Link name",
         
-        // Confirmation and prompt messages
-        confirmDelete: "Are you sure you want to delete this link?",
-        enterUrlFirst: "Please enter URL first",
-        fetchNameFailed: "Failed to fetch website name: ",
-        importSuccess: "Import successful",
-        importFailed: "Import failed: Invalid JSON data",
-        iconsRefreshed: "Successfully refreshed {count} icons",
+        // Bookmark context menu
+        editBookmark: "Edit Bookmark",
+        deleteBookmark: "Delete Bookmark",
         
-        // History
-        recentUrls: "Recently Added",
-        noRecentUrls: "No recent URLs",
-        clearHistory: "Clear History",
-        
-        // Category Management
+        // Category management
         manageCategories: "Manage Categories",
+        newCategoryName: "Enter new category name",
         addCategory: "Add Category",
         editCategory: "Edit Category",
-        categoryName: "Category Name:",
-        newCategoryName: "New Category Name",
-        confirmDeleteCategory: "Are you sure you want to delete this category?",
-        cannotDeleteNonEmptyCategory: "Cannot delete a category that contains links. Please move or delete all links in this category first.",
-        categoryNameRequired: "Category name is required",
-        categoryOrderSaved: "Category order has been saved",
-        dragToReorder: "Drag categories to change display order"
+        deleteCategory: "Delete Category",
+        categoryName: "Category name:",
+        
+        // Import/Export
+        exportSuccess: "Export successful, please save the file",
+        importSuccess: "Import successful! Added {count} links",
+        importError: "Import failed, please check file format",
+        
+        // Drag & sort tip
+        dragTip: "Tip: Drag to reorder, long press to edit",
+        
+        // Icon refresh
+        refreshingIcons: "Refreshing icons...",
+        refreshSuccess: "All icons refreshed",
+        
+        // Themes
+        themes: "Theme Settings",
+        darkTheme: "Dark Theme",
+        lightTheme: "Light Theme",
+        blueTheme: "Blue Theme",
+        purpleTheme: "Purple Theme",
+        customizeTheme: "Customize Theme",
+        themeDescription: "Choose your preferred theme color"
     }
 }; 
