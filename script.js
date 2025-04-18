@@ -435,7 +435,7 @@ function initTheme() {
 // 应用主题
 function applyTheme(theme) {
     // 删除之前的主题类
-    document.body.classList.remove('light-theme', 'blue-theme', 'purple-theme');
+    document.body.classList.remove('light-theme', 'blue-theme', 'purple-theme', 'pink-theme', 'beige-theme');
     
     // 添加新的主题类
     switch (theme) {
@@ -447,6 +447,12 @@ function applyTheme(theme) {
             break;
         case 'purple':
             document.body.classList.add('purple-theme');
+            break;
+        case 'pink':
+            document.body.classList.add('pink-theme');
+            break;
+        case 'beige':
+            document.body.classList.add('beige-theme');
             break;
         default:
             // 默认深色主题，不需要添加类
@@ -529,6 +535,12 @@ function applyLanguage() {
                 break;
             case 'purple':
                 option.setAttribute('title', getText('purpleTheme'));
+                break;
+            case 'pink':
+                option.setAttribute('title', getText('pinkTheme'));
+                break;
+            case 'beige':
+                option.setAttribute('title', getText('beigeTheme'));
                 break;
         }
     });
@@ -2752,6 +2764,12 @@ function openThemesModal() {
                 break;
             case 'purple':
                 option.setAttribute('title', getText('purpleTheme'));
+                break;
+            case 'pink':
+                option.setAttribute('title', getText('pinkTheme'));
+                break;
+            case 'beige':
+                option.setAttribute('title', getText('beigeTheme'));
                 break;
         }
     });

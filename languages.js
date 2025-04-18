@@ -111,6 +111,8 @@ const languages = {
         lightTheme: "浅色主题",
         blueTheme: "蓝色主题",
         purpleTheme: "紫色主题",
+        pinkTheme: "粉色主题",
+        beigeTheme: "米色主题",
         customizeTheme: "自定义主题",
         themeDescription: "选择您喜欢的主题颜色",
         
@@ -218,6 +220,8 @@ const languages = {
         lightTheme: "Light Theme",
         blueTheme: "Blue Theme",
         purpleTheme: "Purple Theme",
+        pinkTheme: "Pink Theme",
+        beigeTheme: "Beige Theme",
         customizeTheme: "Customize Theme",
         themeDescription: "Choose your preferred theme color",
         
